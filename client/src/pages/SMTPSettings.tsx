@@ -22,6 +22,7 @@ type SMTPSettings = {
   username: string;
   fromName: string;
   fromEmail: string;
+  reminderTime: string;
 };
 
 export default function SMTPSettings() {
@@ -55,6 +56,7 @@ export default function SMTPSettings() {
       password: "",
       fromName: settings?.fromName || "",
       fromEmail: settings?.fromEmail || "",
+      reminderTime: settings?.reminderTime || "08:00",
     },
     values: settings ? {
       host: settings.host,
@@ -64,6 +66,7 @@ export default function SMTPSettings() {
       password: "",
       fromName: settings.fromName,
       fromEmail: settings.fromEmail,
+      reminderTime: settings.reminderTime || "08:00",
     } : undefined,
   });
 
@@ -283,6 +286,28 @@ export default function SMTPSettings() {
                       </FormControl>
                       <FormDescription>
                         Email адреса, з якої надсилатимуться листи
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reminderTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Надсилати нагадування в</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="time"
+                          {...field}
+                          value={field.value || "08:00"}
+                          data-testid="input-smtp-reminder-time"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        О котрій годині перевіряти термін виконання завдань і надсилати на емайл нагадування
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
