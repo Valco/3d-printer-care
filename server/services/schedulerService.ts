@@ -1,19 +1,22 @@
 import cron from "node-cron";
 import { prisma } from "../prisma";
 import { sendTaskReminders } from "./emailService";
+import { sendTelegramTaskReminders } from "./telegramService";
 
-let currentScheduler: cron.ScheduledTask | null = null;
+let currentEmailScheduler: cron.ScheduledTask | null = null;
+let currentTelegramScheduler: cron.ScheduledTask | null = null;
 
 export async function initializeScheduler() {
-  await updateScheduler();
-  console.log("Scheduler initialized");
+  await updateEmailScheduler();
+  await updateTelegramScheduler();
+  console.log("Schedulers initialized");
 }
 
-export async function updateScheduler() {
+export async function updateEmailScheduler() {
   // Зупиняємо попередній scheduler якщо існує
-  if (currentScheduler) {
-    currentScheduler.stop();
-    currentScheduler = null;
+  if (currentEmailScheduler) {
+    currentEmailScheduler.stop();
+    currentEmailScheduler = null;
   }
 
   // Отримуємо час нагадувань з БД
@@ -27,12 +30,38 @@ export async function updateScheduler() {
   // Створюємо новий cron розклад
   const cronExpression = `${minutes} ${hours} * * *`;
   
-  currentScheduler = cron.schedule(cronExpression, async () => {
-    console.log(`Running daily task reminder check at ${reminderTime}...`);
-    await checkAndSendTaskReminders();
+  currentEmailScheduler = cron.schedule(cronExpression, async () => {
+    console.log(`Running daily email task reminder check at ${reminderTime}...`);
+    await checkAndSendEmailReminders();
   });
 
-  console.log(`Scheduler updated: Daily task reminders at ${reminderTime}`);
+  console.log(`Email scheduler updated: Daily task reminders at ${reminderTime}`);
+}
+
+export async function updateTelegramScheduler() {
+  // Зупиняємо попередній scheduler якщо існує
+  if (currentTelegramScheduler) {
+    currentTelegramScheduler.stop();
+    currentTelegramScheduler = null;
+  }
+
+  // Отримуємо час нагадувань з БД
+  const telegramSettings = await prisma.telegramSettings.findFirst({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const reminderTime = telegramSettings?.reminderTime || "08:00";
+  const [hours, minutes] = reminderTime.split(":").map(Number);
+
+  // Створюємо новий cron розклад
+  const cronExpression = `${minutes} ${hours} * * *`;
+  
+  currentTelegramScheduler = cron.schedule(cronExpression, async () => {
+    console.log(`Running daily Telegram task reminder check at ${reminderTime}...`);
+    await checkAndSendTelegramReminders();
+  });
+
+  console.log(`Telegram scheduler updated: Daily task reminders at ${reminderTime}`);
 }
 
 export async function getTasksDueToday() {
@@ -73,18 +102,33 @@ export async function getTasksDueToday() {
   return todayTasks;
 }
 
-async function checkAndSendTaskReminders() {
+async function checkAndSendEmailReminders() {
   try {
     const todayTasks = await getTasksDueToday();
 
     if (todayTasks.length > 0) {
-      console.log(`Found ${todayTasks.length} task(s) due today. Sending reminders...`);
+      console.log(`Found ${todayTasks.length} task(s) due today. Sending email reminders...`);
       await sendTaskReminders(todayTasks);
     } else {
-      console.log("No tasks due today. No reminders to send.");
+      console.log("No tasks due today. No email reminders to send.");
     }
   } catch (error) {
-    console.error("Error checking and sending task reminders:", error);
+    console.error("Error checking and sending email task reminders:", error);
+  }
+}
+
+async function checkAndSendTelegramReminders() {
+  try {
+    const todayTasks = await getTasksDueToday();
+
+    if (todayTasks.length > 0) {
+      console.log(`Found ${todayTasks.length} task(s) due today. Sending Telegram reminders...`);
+      await sendTelegramTaskReminders(todayTasks);
+    } else {
+      console.log("No tasks due today. No Telegram reminders to send.");
+    }
+  } catch (error) {
+    console.error("Error checking and sending Telegram task reminders:", error);
   }
 }
 

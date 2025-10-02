@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../prisma";
 import crypto from "crypto";
+import { updateTelegramScheduler } from "../services/schedulerService";
 
 const router = Router();
 
@@ -129,6 +130,9 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
         },
       });
     }
+
+    // Оновлюємо Telegram scheduler з новим часом нагадувань
+    await updateTelegramScheduler();
 
     // Повертаємо без токену
     res.json({
