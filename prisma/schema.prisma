@@ -89,15 +89,17 @@ model MaintenanceTask {
 }
 
 model PrinterTaskSchedule {
-  id            String           @id @default(uuid())
-  printerId     String
-  taskId        String
-  printer       Printer          @relation(fields: [printerId], references: [id], onDelete: Cascade)
-  task          MaintenanceTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  lastCompleted DateTime?
-  nextDue       DateTime?
-  isActive      Boolean          @default(true)
-  createdAt     DateTime         @default(now())
+  id                      String           @id @default(uuid())
+  printerId               String
+  taskId                  String
+  printer                 Printer          @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  task                    MaintenanceTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  lastCompleted           DateTime?
+  nextDue                 DateTime?
+  isActive                Boolean          @default(true)
+  lastCompletedPrintHours Int?
+  lastCompletedJobsCount  Int?
+  createdAt               DateTime         @default(now())
 
   @@unique([printerId, taskId])
 }
