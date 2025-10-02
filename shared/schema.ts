@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,3 +16,27 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const smtpSettings = pgTable("SMTPSettings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  host: text("host").notNull(),
+  port: integer("port").notNull(),
+  secure: boolean("secure").notNull().default(true),
+  username: text("username").notNull(),
+  passwordEncrypted: text("passwordEncrypted"),
+  fromName: text("fromName").notNull(),
+  fromEmail: text("fromEmail").notNull(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export const insertSMTPSettingsSchema = createInsertSchema(smtpSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  password: z.string().min(1, "Пароль обов'язковий"),
+});
+
+export type InsertSMTPSettings = z.infer<typeof insertSMTPSettingsSchema>;
+export type SMTPSettings = typeof smtpSettings.$inferSelect;

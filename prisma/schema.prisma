@@ -135,3 +135,16 @@ model Notification {
   sentAt    DateTime @default(now())
   createdAt DateTime @default(now())
 }
+
+model SMTPSettings {
+  id              String   @id @default(uuid())
+  host            String
+  port            Int
+  secure          Boolean  @default(true)
+  username        String
+  passwordEncrypted String?
+  fromName        String
+  fromEmail       String
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
