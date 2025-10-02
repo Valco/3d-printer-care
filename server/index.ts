@@ -1,10 +1,9 @@
-import express, { type Request, Response, NextFunction } from "express";
+import { type Request, Response, NextFunction } from "express";
+import { createApp } from "./app";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const app = createApp();
 
 app.use((req, res, next) => {
   const start = Date.now();
