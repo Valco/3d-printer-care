@@ -46,6 +46,7 @@ export default function Scan() {
   const [scannedPrinterName, setScannedPrinterName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scanControlsRef = useRef<IScannerControls | null>(null);
+  const lastScannedIdRef = useRef<string | null>(null);
 
   const { data: workLogs, isLoading: isLoadingLogs } = useQuery<WorkLog[]>({
     queryKey: ["/api/worklogs", scannedPrinterId],
@@ -65,6 +66,7 @@ export default function Scan() {
       setError(null);
       setScannedPrinterId(null);
       setScannedPrinterName(null);
+      lastScannedIdRef.current = null;
       
       const codeReader = new BrowserQRCodeReader();
 
@@ -78,34 +80,64 @@ export default function Scan() {
 
       setIsScanning(true);
 
-      const controls = await codeReader.decodeFromVideoDevice(
-        selectedDeviceId,
-        videoRef.current!,
-        (result, error) => {
-          if (result) {
-            try {
-              const qrData: QRData = JSON.parse(result.getText());
-              
-              if (qrData.type === "printer" && qrData.id) {
-                setScannedPrinterId(qrData.id);
-                setScannedPrinterName(qrData.name || "Невідомий принтер");
+      try {
+        const controls = await codeReader.decodeFromVideoDevice(
+          selectedDeviceId,
+          videoRef.current!,
+          (result, error) => {
+            if (result) {
+              const qrText = result.getText();
+              let printerId: string | null = null;
+              let printerName: string | null = null;
+
+              try {
+                const qrData: QRData = JSON.parse(qrText);
+                if (qrData.type === "printer" && qrData.id) {
+                  printerId = qrData.id;
+                  printerName = qrData.name || "Невідомий принтер";
+                }
+              } catch {
+                printerId = qrText;
+                printerName = "Принтер (ID: " + qrText.substring(0, 8) + "...)";
+              }
+
+              if (printerId && printerId !== lastScannedIdRef.current) {
+                lastScannedIdRef.current = printerId;
+                setScannedPrinterId(printerId);
+                setScannedPrinterName(printerName);
                 stopScanning();
               }
-            } catch (e) {
-              console.error("Invalid QR code format", e);
+            }
+            
+            if (error && error.name !== "NotFoundException") {
+              console.error("QR scanning error:", error);
             }
           }
-          
-          if (error && error.name !== "NotFoundException") {
-            console.error("QR scanning error:", error);
-          }
+        );
+        
+        scanControlsRef.current = controls;
+      } catch (cameraErr: any) {
+        console.error("Camera access error:", cameraErr);
+        
+        let errorMessage = "Не вдалося отримати доступ до камери";
+        if (cameraErr.name === "NotAllowedError" || cameraErr.name === "PermissionDeniedError") {
+          errorMessage = "Доступ до камери заборонено. Будь ласка, дозвольте доступ у налаштуваннях браузера.";
+        } else if (cameraErr.name === "NotReadableError" || cameraErr.name === "TrackStartError") {
+          errorMessage = "Камера зайнята іншим додатком. Закрийте інші програми, що використовують камеру.";
+        } else if (cameraErr.name === "NotFoundError") {
+          errorMessage = "Камера не знайдена на цьому пристрої";
         }
-      );
-      
-      scanControlsRef.current = controls;
+        
+        setError(errorMessage);
+        setIsScanning(false);
+        if (scanControlsRef.current) {
+          scanControlsRef.current.stop();
+          scanControlsRef.current = null;
+        }
+      }
     } catch (err) {
-      console.error("Camera error:", err);
-      setError("Не вдалося отримати доступ до камери");
+      console.error("Camera initialization error:", err);
+      setError("Не вдалося ініціалізувати камеру");
       setIsScanning(false);
     }
   };
@@ -121,6 +153,7 @@ export default function Scan() {
   const resetScanner = () => {
     setScannedPrinterId(null);
     setScannedPrinterName(null);
+    lastScannedIdRef.current = null;
     setError(null);
   };
 
