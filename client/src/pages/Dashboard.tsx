@@ -9,7 +9,6 @@ import PrinterDetailsDialog from "@/components/PrinterDetailsDialog";
 import { AlertCircle, Clock, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import WorkLogForm from "@/components/WorkLogForm";
-import QRScanner from "@/components/QRScanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -60,7 +59,6 @@ type WorkLogInput = {
 export default function Dashboard() {
   const [location, navigate] = useLocation();
   const [showWorkLog, setShowWorkLog] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(null);
   const [preselectedPrinterId, setPreselectedPrinterId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -144,7 +142,7 @@ export default function Dashboard() {
             <Plus className="h-4 w-4 mr-2" />
             Записати роботу
           </Button>
-          <Button variant="outline" onClick={() => setShowScanner(true)} data-testid="button-scan-qr">
+          <Button variant="outline" onClick={() => navigate('/scan')} data-testid="button-scan-qr">
             <QrCode className="h-4 w-4 mr-2" />
             Сканувати QR
           </Button>
@@ -227,16 +225,6 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
-
-      {showScanner && (
-        <QRScanner
-          onScan={(data) => {
-            console.log("Scanned:", data);
-            setShowScanner(false);
-          }}
-          onClose={() => setShowScanner(false)}
-        />
-      )}
 
       <PrinterDetailsDialog
         printerId={selectedPrinterId}
