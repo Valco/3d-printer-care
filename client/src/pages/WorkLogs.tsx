@@ -30,6 +30,10 @@ type WorkLog = {
   performedBy: string | null;
   date: string;
   details: string | null;
+  axis: string | null;
+  nozzleSize: string | null;
+  plasticType: string | null;
+  customFieldValue: string | null;
   printHoursAtLog: number | null;
   jobsCountAtLog: number | null;
   printer: {
@@ -198,6 +202,7 @@ export default function WorkLogs() {
               <TableHead>Дата</TableHead>
               <TableHead>Принтер</TableHead>
               <TableHead>Завдання</TableHead>
+              <TableHead>Додаткові параметри</TableHead>
               <TableHead>Виконав</TableHead>
               <TableHead>Годин друку</TableHead>
               <TableHead>Робіт</TableHead>
@@ -207,54 +212,86 @@ export default function WorkLogs() {
           <TableBody>
             {filteredLogs?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Записи не знайдено
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLogs?.map((log) => (
-                <TableRow key={log.id} data-testid={`row-log-${log.id}`}>
-                  <TableCell>
-                    {format(new Date(log.date), "dd MMM yyyy, HH:mm", { locale: uk })}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div>
-                      <div>{log.printer.name}</div>
-                      {log.printer.model && (
-                        <div className="text-sm text-muted-foreground">{log.printer.model}</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {log.task ? (
+              filteredLogs?.map((log) => {
+                const hasAdditionalParams = log.axis || log.nozzleSize || log.plasticType || log.customFieldValue;
+                
+                return (
+                  <TableRow key={log.id} data-testid={`row-log-${log.id}`}>
+                    <TableCell>
+                      {format(new Date(log.date), "dd MMM yyyy, HH:mm", { locale: uk })}
+                    </TableCell>
+                    <TableCell className="font-medium">
                       <div>
-                        <div>{log.task.title}</div>
-                        {log.task.category && (
-                          <Badge variant="outline" className="mt-1">
-                            {log.task.category.name}
-                          </Badge>
+                        <div>{log.printer.name}</div>
+                        {log.printer.model && (
+                          <div className="text-sm text-muted-foreground">{log.printer.model}</div>
                         )}
                       </div>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {log.performedBy || "-"}
-                  </TableCell>
-                  <TableCell>
-                    {log.printHoursAtLog !== null ? log.printHoursAtLog : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {log.jobsCountAtLog !== null ? log.jobsCountAtLog : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-xs truncate">
-                      {log.details || "-"}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell>
+                      {log.task ? (
+                        <div>
+                          <div>{log.task.title}</div>
+                          {log.task.category && (
+                            <Badge variant="outline" className="mt-1">
+                              {log.task.category.name}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {hasAdditionalParams ? (
+                        <div className="space-y-1 text-sm">
+                          {log.axis && (
+                            <div>
+                              <span className="text-muted-foreground">Вісь:</span> {log.axis}
+                            </div>
+                          )}
+                          {log.nozzleSize && (
+                            <div>
+                              <span className="text-muted-foreground">Сопло:</span> {log.nozzleSize}
+                            </div>
+                          )}
+                          {log.plasticType && (
+                            <div>
+                              <span className="text-muted-foreground">Пластик:</span> {log.plasticType}
+                            </div>
+                          )}
+                          {log.customFieldValue && (
+                            <div>
+                              <span className="text-muted-foreground">Інше:</span> {log.customFieldValue}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {log.performedBy || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {log.printHoursAtLog !== null ? log.printHoursAtLog : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {log.jobsCountAtLog !== null ? log.jobsCountAtLog : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-xs truncate">
+                        {log.details || "-"}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
