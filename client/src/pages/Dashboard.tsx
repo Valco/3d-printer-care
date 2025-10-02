@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Plus, QrCode, Printer, Loader2 } from "lucide-react";
 import StatCard from "@/components/StatCard";
@@ -57,10 +58,25 @@ type WorkLogInput = {
 };
 
 export default function Dashboard() {
+  const [location, navigate] = useLocation();
   const [showWorkLog, setShowWorkLog] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(null);
+  const [preselectedPrinterId, setPreselectedPrinterId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const urlParts = location.split('?');
+    if (urlParts.length > 1) {
+      const params = new URLSearchParams(urlParts[1]);
+      const printerId = params.get('addWorkLog');
+      if (printerId) {
+        setPreselectedPrinterId(printerId);
+        setShowWorkLog(true);
+        navigate('/', { replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/auth/me"],
@@ -92,6 +108,7 @@ export default function Dashboard() {
         description: "Роботу успішно записано",
       });
       setShowWorkLog(false);
+      setPreselectedPrinterId(null);
     },
     onError: (error: Error) => {
       toast({
@@ -203,8 +220,12 @@ export default function Dashboard() {
               printers={printers || []}
               tasks={tasks || []}
               currentUserName={currentUser?.name || ""}
+              preselectedPrinterId={preselectedPrinterId}
               onSubmit={(data) => createWorkLog.mutate(data)}
-              onCancel={() => setShowWorkLog(false)}
+              onCancel={() => {
+                setShowWorkLog(false);
+                setPreselectedPrinterId(null);
+              }}
             />
           )}
         </DialogContent>

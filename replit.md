@@ -62,7 +62,7 @@ Preferred communication style: Simple, everyday language.
 - Supports both JSON format (`{type: "printer", id: "...", name: "..."}`) and raw printer IDs
 - Duplicate detection to prevent repeated scans of the same printer
 - Comprehensive error handling: permission denied, camera busy, device not found
-- Automatic display of work logs after successful scan
+- **Workflow**: After successful QR scan → redirects to Dashboard → auto-opens work log form with preselected printer
 - Mobile-friendly interface for on-site maintenance teams
 
 ### Database Architecture

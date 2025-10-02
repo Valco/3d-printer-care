@@ -15,6 +15,7 @@ type WorkLogFormProps = {
   printers: Array<{ id: string; name: string }>;
   tasks: Array<{ id: string; title: string }>;
   currentUserName: string;
+  preselectedPrinterId?: string | null;
   onSubmit: (data: WorkLogData) => void;
   onCancel: () => void;
 };
@@ -30,9 +31,9 @@ export type WorkLogData = {
   performedBy?: string;
 };
 
-export default function WorkLogForm({ printers, tasks, currentUserName, onSubmit, onCancel }: WorkLogFormProps) {
+export default function WorkLogForm({ printers, tasks, currentUserName, preselectedPrinterId, onSubmit, onCancel }: WorkLogFormProps) {
   const [formData, setFormData] = useState<WorkLogData>({
-    printerId: "",
+    printerId: preselectedPrinterId || "",
     performedBy: currentUserName,
   });
 
@@ -41,6 +42,12 @@ export default function WorkLogForm({ printers, tasks, currentUserName, onSubmit
       setFormData(prev => ({ ...prev, performedBy: currentUserName }));
     }
   }, [currentUserName]);
+
+  useEffect(() => {
+    if (preselectedPrinterId) {
+      setFormData(prev => ({ ...prev, printerId: preselectedPrinterId }));
+    }
+  }, [preselectedPrinterId]);
 
   const selectedTask = tasks.find(task => task.id === formData.taskId);
   const taskTitle = selectedTask?.title.toLowerCase() || "";
