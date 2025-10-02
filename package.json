@@ -47,6 +47,8 @@
     "@types/i18n": "^0.13.12",
     "@types/pg": "^8.15.5",
     "@types/qrcode": "^1.5.5",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
