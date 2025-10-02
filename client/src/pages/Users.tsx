@@ -46,6 +46,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  telegramNickname: string | null;
   role: string;
   groupId: string | null;
   group: {
@@ -63,6 +64,7 @@ type UserGroup = {
 const userSchema = z.object({
   name: z.string().min(1, "Ім'я обов'язкове"),
   email: z.string().email("Некоректний email"),
+  telegramNickname: z.string().optional(),
   password: z.string().min(6, "Пароль повинен містити мінімум 6 символів").optional().or(z.literal("")),
   role: z.enum(["ADMIN", "OPERATOR", "VIEWER"]),
   groupId: z.string().optional(),
@@ -88,6 +90,7 @@ export default function Users() {
     defaultValues: {
       name: "",
       email: "",
+      telegramNickname: "",
       password: "",
       role: "VIEWER",
       groupId: "",
@@ -175,6 +178,7 @@ export default function Users() {
     form.reset({
       name: user.name,
       email: user.email,
+      telegramNickname: user.telegramNickname || "",
       password: "",
       role: user.role as "ADMIN" | "OPERATOR" | "VIEWER",
       groupId: user.groupId || "",
@@ -237,6 +241,7 @@ export default function Users() {
             form.reset({
               name: "",
               email: "",
+              telegramNickname: "",
               password: "",
               role: "VIEWER",
               groupId: "",
@@ -343,6 +348,19 @@ export default function Users() {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" data-testid="input-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="telegramNickname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Нік в Telegram (необов'язково)</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="@username" data-testid="input-telegram-nickname" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
