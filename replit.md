@@ -35,6 +35,11 @@ Preferred communication style: Simple, everyday language.
   - Interactive tooltips showing task name and due date on hover
   - Auto-categorization: tasks automatically move between color categories as due dates change
   - Ordered display: upcoming → today → overdue (left to right)
+- **Dashboard stat card hover details** (October 2025): Interactive task list popups on stat card icons
+  - Hover over stat card icons (Прострочені, Сьогодні, Майбутні) to see detailed task list
+  - HoverCard displays aggregated tasks from all printers with task name and printer name
+  - Scrollable list (max-h-60) for many tasks
+  - Color-coded borders matching stat card variant (overdue=red, today=orange, upcoming=green)
 
 ### Backend Architecture
 
