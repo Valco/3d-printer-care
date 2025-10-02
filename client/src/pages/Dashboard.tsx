@@ -150,6 +150,18 @@ export default function Dashboard() {
     );
   }
 
+  const allOverdueTasks = dashboardData?.printers.flatMap(p => 
+    p.overdueTasks.map(t => ({ ...t, printerName: p.name }))
+  ) || [];
+  
+  const allTodayTasks = dashboardData?.printers.flatMap(p => 
+    p.todayTasks.map(t => ({ ...t, printerName: p.name }))
+  ) || [];
+  
+  const allUpcomingTasks = dashboardData?.printers.flatMap(p => 
+    p.upcomingTasks.map(t => ({ ...t, printerName: p.name }))
+  ) || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -179,21 +191,24 @@ export default function Dashboard() {
           value={dashboardData?.overdueCount || 0} 
           icon={AlertCircle} 
           variant="overdue" 
-          testId="stat-overdue" 
+          testId="stat-overdue"
+          tasks={allOverdueTasks}
         />
         <StatCard 
           title="Сьогодні" 
           value={dashboardData?.todayCount || 0} 
           icon={Clock} 
           variant="warning" 
-          testId="stat-today" 
+          testId="stat-today"
+          tasks={allTodayTasks}
         />
         <StatCard 
           title="Майбутні" 
           value={dashboardData?.upcomingCount || 0} 
           icon={TrendingUp} 
           variant="success" 
-          testId="stat-upcoming" 
+          testId="stat-upcoming"
+          tasks={allUpcomingTasks}
         />
       </div>
 
