@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../prisma";
 import crypto from "crypto";
+import { updateScheduler } from "../services/schedulerService";
 
 const router = Router();
 
@@ -132,6 +133,9 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
         },
       });
     }
+
+    // Оновлюємо scheduler з новим часом нагадувань
+    await updateScheduler();
 
     // Повертаємо без паролю
     res.json({
