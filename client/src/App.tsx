@@ -19,6 +19,7 @@ import Groups from "@/pages/Groups";
 import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import SMTPSettings from "@/pages/SMTPSettings";
+import TelegramSettings from "@/pages/TelegramSettings";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
@@ -80,6 +81,7 @@ function Router() {
                 <Route path="/settings/groups" component={Groups} />
                 <Route path="/settings/users" component={Users} />
                 <Route path="/settings/smtp" component={SMTPSettings} />
+                <Route path="/settings/telegram" component={TelegramSettings} />
                 <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>
