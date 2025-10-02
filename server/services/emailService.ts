@@ -9,8 +9,13 @@ function decrypt(text: string): string {
   if (!ENCRYPTION_KEY) {
     throw new Error("ENCRYPTION_KEY is not defined");
   }
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  
   const parts = text.split(":");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new Error("Invalid encrypted format: missing IV or encrypted data");
+  }
+  
+  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
   const iv = Buffer.from(parts[0], "hex");
   const encrypted = parts[1];
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
