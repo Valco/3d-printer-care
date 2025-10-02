@@ -109,7 +109,7 @@ export default function Scan() {
               }
             }
             
-            if (error && error.name !== "NotFoundException") {
+            if (error && !error.name?.includes("NotFoundException")) {
               console.error("QR scanning error:", error);
             }
           }
