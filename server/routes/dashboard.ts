@@ -83,6 +83,7 @@ router.get("/api/dashboard", requireAuth, async (req, res) => {
         visibility: printer.visibility,
         overdueCount: overdueSchedules.length,
         todayCount: todaySchedules.length,
+        upcomingCount: upcomingSchedules.length,
       };
     });
 

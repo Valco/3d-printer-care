@@ -26,6 +26,7 @@ type DashboardData = {
     visibility: string;
     overdueCount: number;
     todayCount: number;
+    upcomingCount: number;
   }>;
 };
 
@@ -200,6 +201,7 @@ export default function Dashboard() {
               visibility={printer.visibility as "PUBLIC" | "RESTRICTED"}
               overdueCount={printer.overdueCount}
               todayCount={printer.todayCount}
+              upcomingCount={printer.upcomingCount}
               onViewDetails={(id) => setSelectedPrinterId(id)}
             />
           ))}

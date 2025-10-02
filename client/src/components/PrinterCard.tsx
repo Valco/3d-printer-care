@@ -11,6 +11,7 @@ type PrinterCardProps = {
   visibility: "PUBLIC" | "RESTRICTED";
   overdueCount: number;
   todayCount: number;
+  upcomingCount: number;
   onViewDetails: (id: string) => void;
 };
 
@@ -22,6 +23,7 @@ export default function PrinterCard({
   visibility,
   overdueCount,
   todayCount,
+  upcomingCount,
   onViewDetails,
 }: PrinterCardProps) {
   const hasOverdue = overdueCount > 0;
@@ -55,26 +57,24 @@ export default function PrinterCard({
             <span className="truncate" data-testid={`text-printer-location-${id}`}>{location}</span>
           </div>
         )}
-        <div className="flex flex-wrap gap-2">
-          {overdueCount > 0 && (
-            <Badge
-              variant="outline"
-              className="bg-overdue/20 text-overdue border-overdue/30"
-              data-testid={`badge-overdue-${id}`}
-            >
-              <AlertCircle className="h-3 w-3 mr-1" />
-              {overdueCount} прострочено
-            </Badge>
-          )}
-          {todayCount > 0 && (
-            <Badge
-              variant="outline"
-              className="bg-warning/20 text-warning border-warning/30"
-              data-testid={`badge-today-${id}`}
-            >
-              {todayCount} сьогодні
-            </Badge>
-          )}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 flex-1">
+            <div className="flex items-center gap-1 bg-success/20 px-2 py-1 rounded-md border border-success/30">
+              <span className="text-xs font-semibold text-success" data-testid={`count-upcoming-${id}`}>
+                {upcomingCount}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 bg-warning/20 px-2 py-1 rounded-md border border-warning/30">
+              <span className="text-xs font-semibold text-warning" data-testid={`count-today-${id}`}>
+                {todayCount}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 bg-overdue/20 px-2 py-1 rounded-md border border-overdue/30">
+              <span className="text-xs font-semibold text-overdue" data-testid={`count-overdue-${id}`}>
+                {overdueCount}
+              </span>
+            </div>
+          </div>
         </div>
       </CardContent>
       <CardFooter>

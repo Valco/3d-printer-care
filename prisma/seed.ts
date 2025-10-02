@@ -302,6 +302,78 @@ async function main() {
   }
 
   console.log("Created schedules:", scheduleCount);
+
+  const overdueTask1 = await prisma.maintenanceTask.create({
+    data: {
+      title: "Термінове калібрування Z осі",
+      categoryId: categories[0].id,
+      intervalType: "DAYS",
+      intervalValue: 7,
+      priority: 9,
+      requiresAxis: true,
+    },
+  });
+
+  const overdueTask2 = await prisma.maintenanceTask.create({
+    data: {
+      title: "Критична перевірка натягуременів",
+      categoryId: categories[4].id,
+      intervalType: "DAYS",
+      intervalValue: 14,
+      priority: 8,
+    },
+  });
+
+  const overdueTask3 = await prisma.maintenanceTask.create({
+    data: {
+      title: "Заміна мастила в екструдері",
+      categoryId: categories[2].id,
+      intervalType: "DAYS",
+      intervalValue: 10,
+      priority: 7,
+    },
+  });
+
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 5);
+
+  const lastWeekDate = new Date();
+  lastWeekDate.setDate(lastWeekDate.getDate() - 3);
+
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 10);
+
+  await prisma.printerTaskSchedule.create({
+    data: {
+      printerId: printers[0].id,
+      taskId: overdueTask1.id,
+      lastCompleted: twoWeeksAgo,
+      nextDue: yesterdayDate,
+      isActive: true,
+    },
+  });
+
+  await prisma.printerTaskSchedule.create({
+    data: {
+      printerId: printers[0].id,
+      taskId: overdueTask2.id,
+      lastCompleted: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      nextDue: lastWeekDate,
+      isActive: true,
+    },
+  });
+
+  await prisma.printerTaskSchedule.create({
+    data: {
+      printerId: printers[1].id,
+      taskId: overdueTask3.id,
+      lastCompleted: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000),
+      nextDue: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      isActive: true,
+    },
+  });
+
+  console.log("Created 3 overdue task schedules");
   console.log("Seed completed successfully!");
 }
 
