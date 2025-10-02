@@ -79,6 +79,15 @@ Preferred communication style: Simple, everyday language.
   - Token required on initial setup, optional on updates (existing token retained)
   - Settings stored in TelegramSettings database table
   - Supports sending reminders to Telegram chat/group for tasks due today or overdue
+- **Automated Email Notifications** (October 2025): Daily email reminders for tasks due today
+  - Scheduled via node-cron to run daily at 8:00 AM
+  - Automatically identifies tasks with nextDue falling on current date
+  - Sends formatted HTML email with table of tasks (printer, task name, priority)
+  - Recipients gathered from PrinterEmailRecipient table (unique emails across all printers)
+  - Uses encrypted SMTP settings from database (AES-256-CBC with SESSION_SECRET)
+  - Admin-only test endpoint at POST /api/test/send-task-reminders for manual testing
+  - Shared getTasksDueToday() function eliminates logic duplication
+  - Robust error handling for missing SMTP config, malformed encryption, send failures
 
 **QR Scanner Implementation** (`/scan` route):
 - Camera-based QR code scanning using @zxing/browser
