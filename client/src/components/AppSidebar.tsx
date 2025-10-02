@@ -1,4 +1,4 @@
-import { Settings, LayoutDashboard, Printer, ClipboardList, KanbanSquare, FileText, QrCode, Users, FolderTree } from "lucide-react";
+import { Settings, LayoutDashboard, Printer, ClipboardList, KanbanSquare, FileText, QrCode, Users, FolderTree, ChevronDown } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -8,12 +8,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import ThemeToggle from "./ThemeToggle";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 type AppSidebarProps = {
   userRole: "ADMIN" | "OPERATOR" | "VIEWER";
@@ -21,6 +25,7 @@ type AppSidebarProps = {
 
 export function AppSidebar({ userRole }: AppSidebarProps) {
   const [location, setLocation] = useLocation();
+  const [settingsOpen, setSettingsOpen] = useState(true);
 
   const mainItems = [
     { title: "Панель управління", url: "/", icon: LayoutDashboard },
@@ -31,12 +36,13 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     { title: "QR сканер", url: "/scan", icon: QrCode },
   ];
 
-  const settingsItems = [
+  const settingsSubItems = [
     { title: "Категорії", url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
     { title: "Користувачі", url: "/settings/users", icon: Users, roles: ["ADMIN"] },
     { title: "Групи", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
-    { title: "Налаштування", url: "/settings", icon: Settings, roles: ["ADMIN"] },
   ];
+
+  const hasSettingsAccess = settingsSubItems.some(item => item.roles.includes(userRole)) || userRole === "ADMIN";
 
   return (
     <Sidebar>
@@ -76,27 +82,56 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {settingsItems.some(item => item.roles.includes(userRole)) && (
+        {hasSettingsAccess && (
           <SidebarGroup>
             <SidebarGroupLabel>Керування</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {settingsItems
-                  .filter(item => item.roles.includes(userRole))
-                  .map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={location === item.url}
-                        data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        <a href={item.url} onClick={(e) => { e.preventDefault(); setLocation(item.url); }}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setSettingsOpen(!settingsOpen)}
+                    isActive={location.startsWith('/settings')}
+                    data-testid="nav-налаштування"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Налаштування</span>
+                    <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+                  </SidebarMenuButton>
+                  {settingsOpen && (
+                    <SidebarMenuSub>
+                      {settingsSubItems
+                        .filter(item => item.roles.includes(userRole))
+                        .map((item) => (
+                          <SidebarMenuSubItem key={item.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={location === item.url}
+                              data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                            >
+                              <a href={item.url} onClick={(e) => { e.preventDefault(); setLocation(item.url); }}>
+                                <item.icon className="h-4 w-4" />
+                                <span>{item.title}</span>
+                              </a>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      {userRole === "ADMIN" && (
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={location === '/settings'}
+                            data-testid="nav-загальні-налаштування"
+                          >
+                            <a href="/settings" onClick={(e) => { e.preventDefault(); setLocation('/settings'); }}>
+                              <Settings className="h-4 w-4" />
+                              <span>Загальні</span>
+                            </a>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      )}
+                    </SidebarMenuSub>
+                  )}
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
