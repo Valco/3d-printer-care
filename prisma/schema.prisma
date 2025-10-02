@@ -83,6 +83,11 @@ model MaintenanceTask {
   intervalValue       Int
   defaultInstructions String?
   priority            Int                   @default(5)
+  requiresAxis        Boolean               @default(false)
+  requiresNozzleSize  Boolean               @default(false)
+  requiresPlasticType Boolean               @default(false)
+  customFieldLabel    String?
+  customFieldType     String?
   schedules           PrinterTaskSchedule[]
   workLogs            WorkLog[]
   createdAt           DateTime              @default(now())
@@ -105,18 +110,21 @@ model PrinterTaskSchedule {
 }
 
 model WorkLog {
-  id              String           @id @default(uuid())
-  date            DateTime         @default(now())
-  printerId       String
-  taskId          String?
-  printer         Printer          @relation(fields: [printerId], references: [id])
-  task            MaintenanceTask? @relation(fields: [taskId], references: [id])
-  nozzleSize      String?
-  printHoursAtLog Int?
-  jobsCountAtLog  Int?
-  details         String?
-  performedBy     String?
-  createdAt       DateTime         @default(now())
+  id               String           @id @default(uuid())
+  date             DateTime         @default(now())
+  printerId        String
+  taskId           String?
+  printer          Printer          @relation(fields: [printerId], references: [id])
+  task             MaintenanceTask? @relation(fields: [taskId], references: [id])
+  axis             String?
+  nozzleSize       String?
+  plasticType      String?
+  customFieldValue String?
+  printHoursAtLog  Int?
+  jobsCountAtLog   Int?
+  details          String?
+  performedBy      String?
+  createdAt        DateTime         @default(now())
 }
 
 model Notification {

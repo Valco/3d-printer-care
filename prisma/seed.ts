@@ -112,6 +112,8 @@ async function main() {
 
   console.log("Created categories:", categories.map(c => c.name));
 
+  await prisma.workLog.deleteMany({});
+  await prisma.printerTaskSchedule.deleteMany({});
   await prisma.printer.deleteMany({});
   
   const printers = await Promise.all([
@@ -195,6 +197,7 @@ async function main() {
         intervalType: "PRINT_HOURS",
         intervalValue: 500,
         priority: 7,
+        requiresNozzleSize: true,
       },
     }),
     prisma.maintenanceTask.create({
@@ -231,6 +234,8 @@ async function main() {
         intervalType: "DAYS",
         intervalValue: 45,
         priority: 3,
+        requiresNozzleSize: true,
+        requiresPlasticType: true,
       },
     }),
     prisma.maintenanceTask.create({
@@ -254,8 +259,6 @@ async function main() {
   ]);
 
   console.log("Created tasks:", tasks.length);
-
-  await prisma.printerTaskSchedule.deleteMany({});
 
   let scheduleCount = 0;
   for (const printer of printers) {

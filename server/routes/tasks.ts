@@ -61,6 +61,11 @@ router.post("/api/tasks", requireRole("ADMIN", "OPERATOR"), async (req, res) => 
       intervalValue,
       defaultInstructions,
       priority,
+      requiresAxis,
+      requiresNozzleSize,
+      requiresPlasticType,
+      customFieldLabel,
+      customFieldType,
     } = req.body;
 
     if (!title || !intervalType || !intervalValue) {
@@ -83,6 +88,11 @@ router.post("/api/tasks", requireRole("ADMIN", "OPERATOR"), async (req, res) => 
         intervalValue: parseInt(intervalValue),
         defaultInstructions,
         priority: priority || 5,
+        requiresAxis: requiresAxis || false,
+        requiresNozzleSize: requiresNozzleSize || false,
+        requiresPlasticType: requiresPlasticType || false,
+        customFieldLabel: customFieldLabel || null,
+        customFieldType: customFieldType === "none" ? null : customFieldType || null,
       },
       include: {
         category: true,
@@ -106,6 +116,11 @@ router.patch("/api/tasks/:id", requireRole("ADMIN", "OPERATOR"), async (req, res
       intervalValue,
       defaultInstructions,
       priority,
+      requiresAxis,
+      requiresNozzleSize,
+      requiresPlasticType,
+      customFieldLabel,
+      customFieldType,
     } = req.body;
 
     const existing = await prisma.maintenanceTask.findUnique({
@@ -125,6 +140,11 @@ router.patch("/api/tasks/:id", requireRole("ADMIN", "OPERATOR"), async (req, res
         intervalValue: intervalValue ? parseInt(intervalValue) : undefined,
         defaultInstructions,
         priority,
+        requiresAxis: requiresAxis !== undefined ? requiresAxis : undefined,
+        requiresNozzleSize: requiresNozzleSize !== undefined ? requiresNozzleSize : undefined,
+        requiresPlasticType: requiresPlasticType !== undefined ? requiresPlasticType : undefined,
+        customFieldLabel: customFieldLabel !== undefined ? (customFieldLabel || null) : undefined,
+        customFieldType: customFieldType !== undefined ? (customFieldType === "none" ? null : customFieldType) : undefined,
       },
       include: {
         category: true,

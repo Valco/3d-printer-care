@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,6 +52,11 @@ type Task = {
   intervalValue: number;
   defaultInstructions: string | null;
   priority: number;
+  requiresAxis: boolean;
+  requiresNozzleSize: boolean;
+  requiresPlasticType: boolean;
+  customFieldLabel: string | null;
+  customFieldType: string | null;
   category: {
     id: string;
     name: string;
@@ -77,6 +83,11 @@ const taskSchema = z.object({
   intervalValue: z.coerce.number().min(1, "Значення має бути більше 0"),
   defaultInstructions: z.string().optional(),
   priority: z.coerce.number().min(1).max(10).default(5),
+  requiresAxis: z.boolean().default(false),
+  requiresNozzleSize: z.boolean().default(false),
+  requiresPlasticType: z.boolean().default(false),
+  customFieldLabel: z.string().optional(),
+  customFieldType: z.enum(["TEXT", "NUMBER", "none"]).optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -103,6 +114,11 @@ export default function Tasks() {
       intervalValue: 30,
       defaultInstructions: "",
       priority: 5,
+      requiresAxis: false,
+      requiresNozzleSize: false,
+      requiresPlasticType: false,
+      customFieldLabel: "",
+      customFieldType: "none",
     },
   });
 
@@ -183,6 +199,11 @@ export default function Tasks() {
       intervalValue: 30,
       defaultInstructions: "",
       priority: 5,
+      requiresAxis: false,
+      requiresNozzleSize: false,
+      requiresPlasticType: false,
+      customFieldLabel: "",
+      customFieldType: "none",
     });
     setIsDialogOpen(true);
   };
@@ -196,6 +217,11 @@ export default function Tasks() {
       intervalValue: task.intervalValue,
       defaultInstructions: task.defaultInstructions || "",
       priority: task.priority,
+      requiresAxis: task.requiresAxis,
+      requiresNozzleSize: task.requiresNozzleSize,
+      requiresPlasticType: task.requiresPlasticType,
+      customFieldLabel: task.customFieldLabel || "",
+      customFieldType: (task.customFieldType as "TEXT" | "NUMBER") || "none",
     });
     setIsDialogOpen(true);
   };
@@ -450,6 +476,115 @@ export default function Tasks() {
                   </FormItem>
                 )}
               />
+
+              <div className="space-y-3 border-t pt-4">
+                <h4 className="text-sm font-medium">Додаткові поля для запису роботи</h4>
+                
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="requiresAxis"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-requires-axis"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Потребує вказати вісь (X, Y, Z)
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="requiresNozzleSize"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-requires-nozzle"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Потребує вказати розмір сопла
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="requiresPlasticType"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-requires-plastic"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Потребує вказати вид пластику
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="customFieldLabel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Назва кастомного поля</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="напр. Температура" 
+                            data-testid="input-custom-label"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customFieldType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Тип поля</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || "none"}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-custom-type">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Немає</SelectItem>
+                            <SelectItem value="TEXT">Текст</SelectItem>
+                            <SelectItem value="NUMBER">Число</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
               <DialogFooter>
                 <Button
