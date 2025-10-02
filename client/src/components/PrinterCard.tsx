@@ -87,7 +87,7 @@ export default function PrinterCard({
             <span className="truncate" data-testid={`text-printer-location-${id}`}>{location}</span>
           </div>
         )}
-        <div className="flex items-center gap-1 flex-wrap" data-testid={`tasks-container-${id}`}>
+        <div className="flex flex-col items-start gap-1" data-testid={`tasks-container-${id}`}>
           {allTasks.map((task) => {
             const colorClasses = {
               upcoming: 'bg-success/80 border-success',
@@ -98,9 +98,11 @@ export default function PrinterCard({
             return (
               <Tooltip key={task.id}>
                 <TooltipTrigger asChild>
-                  <div
+                  <button
+                    type="button"
                     className={`w-10 h-5 rounded-full border-2 ${colorClasses[task.status]} cursor-help transition-transform hover:scale-110`}
                     data-testid={`task-cell-${task.id}`}
+                    aria-label={task.taskTitle}
                   />
                 </TooltipTrigger>
                 <TooltipContent data-testid={`tooltip-${task.id}`}>
