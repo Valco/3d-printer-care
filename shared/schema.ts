@@ -50,6 +50,7 @@ export const telegramSettings = pgTable("TelegramSettings", {
   enabled: boolean("enabled").notNull().default(true),
   notifyOverdue: boolean("notifyOverdue").notNull().default(true),
   notifyToday: boolean("notifyToday").notNull().default(true),
+  reminderTime: text("reminderTime").notNull().default("08:00"),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
