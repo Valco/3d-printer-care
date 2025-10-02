@@ -25,12 +25,12 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
       orderBy: { createdAt: "desc" },
     });
 
-    if (!settings) {
+    if (!settings || !settings.passwordEncrypted) {
       console.log("SMTP settings not configured. Skipping email notification.");
       return false;
     }
 
-    const password = decrypt(settings.password);
+    const password = decrypt(settings.passwordEncrypted);
 
     const transporter = nodemailer.createTransport({
       host: settings.host,
@@ -64,12 +64,14 @@ export async function sendTaskReminders(tasks: Array<{
   priority: string;
 }>): Promise<void> {
   try {
-    const recipients = await prisma.emailRecipient.findMany({
-      where: { isActive: true },
+    const allRecipients = await prisma.printerEmailRecipient.findMany({
+      select: { email: true },
     });
 
-    if (recipients.length === 0) {
-      console.log("No active email recipients configured. Skipping reminders.");
+    const uniqueEmails = Array.from(new Set(allRecipients.map(r => r.email)));
+
+    if (uniqueEmails.length === 0) {
+      console.log("No email recipients configured. Skipping reminders.");
       return;
     }
 
@@ -125,11 +127,11 @@ export async function sendTaskReminders(tasks: Array<{
 
     const subject = `🔔 Нагадування: ${tasks.length} ${tasks.length === 1 ? 'завдання' : 'завдань'} на сьогодні`;
 
-    for (const recipient of recipients) {
-      await sendEmail(recipient.email, subject, html);
+    for (const email of uniqueEmails) {
+      await sendEmail(email, subject, html);
     }
 
-    console.log(`Task reminders sent to ${recipients.length} recipient(s)`);
+    console.log(`Task reminders sent to ${uniqueEmails.length} recipient(s)`);
   } catch (error) {
     console.error("Error sending task reminders:", error);
   }
