@@ -13,7 +13,7 @@ type TaskItem = {
 type BoardData = {
   overdue: TaskItem[];
   today: TaskItem[];
-  thisWeek: TaskItem[];
+  week: TaskItem[];
   upcoming: TaskItem[];
 };
 
@@ -56,8 +56,8 @@ export default function TaskBoard() {
         />
         <TaskBoardColumn
           title="Цього тижня"
-          count={boardData?.thisWeek.length || 0}
-          tasks={boardData?.thisWeek || []}
+          count={boardData?.week.length || 0}
+          tasks={boardData?.week || []}
           variant="week"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
