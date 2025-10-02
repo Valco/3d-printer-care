@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 type Task = {
   id: string;
@@ -39,6 +40,15 @@ const variantStyles = {
 export default function TaskBoardColumn({ title, count, tasks, variant, onTaskClick }: TaskBoardColumnProps) {
   const styles = variantStyles[variant];
 
+  const formatDateTime = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return format(date, 'dd:MM:yy HH:mm');
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="flex flex-col h-full min-w-[280px]" data-testid={`column-${variant}`}>
       <div className={`p-4 rounded-t-lg ${styles.headerBg}`}>
@@ -71,7 +81,7 @@ export default function TaskBoardColumn({ title, count, tasks, variant, onTaskCl
                 ))}
               </div>
               {task.dueDate && (
-                <span className="text-xs text-muted-foreground">{task.dueDate}</span>
+                <span className="text-xs text-muted-foreground">{formatDateTime(task.dueDate)}</span>
               )}
             </div>
           </Card>
