@@ -80,11 +80,26 @@ Preferred communication style: Simple, everyday language.
 - Users with role-based permissions and group memberships
 - User Groups for access control
 - Printers with visibility settings and usage metrics (print hours, job counts)
-- Maintenance Tasks with categories and priority levels
+- Maintenance Tasks with categories, priority levels, and **dynamic field configuration**
 - Printer Task Schedules with interval types (DAYS, PRINT_HOURS, JOB_COUNT)
-- Work Logs for completed maintenance
+- Work Logs for completed maintenance with **dynamic field storage**
 - Email Recipients for notifications
 - Task Categories for organization
+
+**Dynamic Field System** (Updated October 2025):
+- MaintenanceTask configuration fields:
+  - `requiresAxis`: boolean - whether work log must specify axis (X/Y/Z)
+  - `requiresNozzleSize`: boolean - whether work log must specify nozzle size
+  - `requiresPlasticType`: boolean - whether work log must specify plastic type
+  - `customFieldLabel`: string - optional custom field label
+  - `customFieldType`: "TEXT" | "NUMBER" - type of custom field
+- WorkLog dynamic fields:
+  - `axis`: string - axis specification when required
+  - `nozzleSize`: string - nozzle size when required
+  - `plasticType`: string - plastic type when required
+  - `customFieldValue`: string - custom field value when configured
+- WorkLogForm intelligently displays only configured fields based on selected task
+- Server-side validation enforces task requirements before persisting work logs
 
 **Session Management**: PostgreSQL-backed sessions using connect-pg-simple
 
