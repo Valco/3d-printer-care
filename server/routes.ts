@@ -9,6 +9,7 @@ import worklogsRoutes from "./routes/worklogs";
 import schedulesRoutes from "./routes/schedules";
 import groupsRoutes from "./routes/groups";
 import usersRoutes from "./routes/users";
+import smtpRoutes from "./routes/smtp";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(authRoutes);
@@ -20,6 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(worklogsRoutes);
   app.use(schedulesRoutes);
   app.use(groupsRoutes);
+  app.use(smtpRoutes);
 
   const httpServer = createServer(app);
 
