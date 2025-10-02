@@ -13,7 +13,15 @@ import {
 
 type WorkLogFormProps = {
   printers: Array<{ id: string; name: string }>;
-  tasks: Array<{ id: string; title: string }>;
+  tasks: Array<{
+    id: string;
+    title: string;
+    requiresAxis: boolean;
+    requiresNozzleSize: boolean;
+    requiresPlasticType: boolean;
+    customFieldLabel: string | null;
+    customFieldType: string | null;
+  }>;
   currentUserName: string;
   preselectedPrinterId?: string | null;
   onSubmit: (data: WorkLogData) => void;
@@ -25,6 +33,8 @@ export type WorkLogData = {
   taskId?: string;
   axis?: string;
   nozzleSize?: string;
+  plasticType?: string;
+  customFieldValue?: string;
   printHours?: number;
   jobsCount?: number;
   details?: string;
@@ -50,16 +60,27 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
   }, [preselectedPrinterId]);
 
   const selectedTask = tasks.find(task => task.id === formData.taskId);
-  const taskTitle = selectedTask?.title.toLowerCase() || "";
-  
-  const isAxisRelated = taskTitle.includes("змащування осей") || taskTitle.includes("змащення осей");
-  const isNozzleRelated = taskTitle.includes("сопло") || taskTitle.includes("дюза");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isAxisRelated && !formData.axis) {
-      alert("Будь ласка, оберіть вісь для змащування");
+    if (selectedTask?.requiresAxis && !formData.axis) {
+      alert("Будь ласка, оберіть вісь для цього завдання");
+      return;
+    }
+    
+    if (selectedTask?.requiresNozzleSize && !formData.nozzleSize) {
+      alert("Будь ласка, вкажіть розмір сопла");
+      return;
+    }
+
+    if (selectedTask?.requiresPlasticType && !formData.plasticType) {
+      alert("Будь ласка, вкажіть тип пластику");
+      return;
+    }
+
+    if (selectedTask?.customFieldLabel && selectedTask?.customFieldType && !formData.customFieldValue) {
+      alert(`Будь ласка, заповніть поле "${selectedTask.customFieldLabel}"`);
       return;
     }
     
@@ -107,7 +128,7 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
         </Select>
       </div>
 
-      {isAxisRelated && (
+      {selectedTask?.requiresAxis && (
         <div className="space-y-2">
           <Label htmlFor="axis">Ось *</Label>
           <Select
@@ -126,15 +147,42 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
         </div>
       )}
 
-      {isNozzleRelated && (
+      {selectedTask?.requiresNozzleSize && (
         <div className="space-y-2">
-          <Label htmlFor="nozzleSize">Розмір сопла</Label>
+          <Label htmlFor="nozzleSize">Розмір сопла *</Label>
           <Input
             id="nozzleSize"
             data-testid="input-nozzle-size"
             value={formData.nozzleSize || ""}
             onChange={(e) => setFormData({ ...formData, nozzleSize: e.target.value })}
             placeholder="0.4mm"
+          />
+        </div>
+      )}
+
+      {selectedTask?.requiresPlasticType && (
+        <div className="space-y-2">
+          <Label htmlFor="plasticType">Тип пластику *</Label>
+          <Input
+            id="plasticType"
+            data-testid="input-plastic-type"
+            value={formData.plasticType || ""}
+            onChange={(e) => setFormData({ ...formData, plasticType: e.target.value })}
+            placeholder="PLA, ABS, PETG..."
+          />
+        </div>
+      )}
+
+      {selectedTask?.customFieldLabel && selectedTask?.customFieldType && (
+        <div className="space-y-2">
+          <Label htmlFor="customField">{selectedTask.customFieldLabel} *</Label>
+          <Input
+            id="customField"
+            type={selectedTask.customFieldType === "NUMBER" ? "number" : "text"}
+            data-testid="input-custom-field"
+            value={formData.customFieldValue || ""}
+            onChange={(e) => setFormData({ ...formData, customFieldValue: e.target.value })}
+            placeholder={`Введіть ${selectedTask.customFieldLabel.toLowerCase()}...`}
           />
         </div>
       )}
@@ -196,7 +244,13 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
         </Button>
         <Button 
           type="submit" 
-          disabled={!formData.printerId || (isAxisRelated && !formData.axis)} 
+          disabled={
+            !formData.printerId || 
+            (!!selectedTask?.requiresAxis && !formData.axis) ||
+            (!!selectedTask?.requiresNozzleSize && !formData.nozzleSize) ||
+            (!!selectedTask?.requiresPlasticType && !formData.plasticType) ||
+            (!!selectedTask?.customFieldLabel && !!selectedTask?.customFieldType && !formData.customFieldValue)
+          }
           data-testid="button-submit"
         >
           Записати роботу

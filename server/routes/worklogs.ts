@@ -61,7 +61,10 @@ router.post("/api/worklogs", requireRole("ADMIN", "OPERATOR"), async (req, res) 
     const {
       printerId,
       taskId,
+      axis,
       nozzleSize,
+      plasticType,
+      customFieldValue,
       printHours,
       jobsCount,
       details,
@@ -84,7 +87,10 @@ router.post("/api/worklogs", requireRole("ADMIN", "OPERATOR"), async (req, res) 
       data: {
         printerId,
         taskId,
+        axis,
         nozzleSize,
+        plasticType,
+        customFieldValue,
         printHoursAtLog: printHours || printer.printHours,
         jobsCountAtLog: jobsCount || printer.jobsCount,
         details,

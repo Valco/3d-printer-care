@@ -37,6 +37,11 @@ type Printer = {
 type TaskData = {
   id: string;
   title: string;
+  requiresAxis: boolean;
+  requiresNozzleSize: boolean;
+  requiresPlasticType: boolean;
+  customFieldLabel: string | null;
+  customFieldType: string | null;
 };
 
 type User = {
@@ -50,6 +55,8 @@ type WorkLogInput = {
   taskId?: string;
   axis?: string;
   nozzleSize?: string;
+  plasticType?: string;
+  customFieldValue?: string;
   printHours?: number;
   jobsCount?: number;
   details?: string;
