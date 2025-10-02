@@ -66,10 +66,12 @@ export default function Dashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Dashboard location changed:", location);
     const urlParts = location.split('?');
     if (urlParts.length > 1) {
       const params = new URLSearchParams(urlParts[1]);
       const printerId = params.get('addWorkLog');
+      console.log("Found addWorkLog param:", printerId);
       if (printerId) {
         setPreselectedPrinterId(printerId);
         setShowWorkLog(true);
