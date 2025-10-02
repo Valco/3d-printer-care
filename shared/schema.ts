@@ -26,6 +26,7 @@ export const smtpSettings = pgTable("SMTPSettings", {
   passwordEncrypted: text("passwordEncrypted"),
   fromName: text("fromName").notNull(),
   fromEmail: text("fromEmail").notNull(),
+  reminderTime: text("reminderTime").notNull().default("08:00"),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 });

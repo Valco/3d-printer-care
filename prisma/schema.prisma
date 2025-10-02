@@ -146,6 +146,7 @@ model SMTPSettings {
   passwordEncrypted String?
   fromName        String
   fromEmail       String
+  reminderTime    String   @default("08:00")
   updatedAt       DateTime @updatedAt
   createdAt       DateTime @default(now())
 }
