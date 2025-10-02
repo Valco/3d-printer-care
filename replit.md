@@ -80,21 +80,31 @@ Preferred communication style: Simple, everyday language.
   - Settings stored in SMTPSettings database table
 - **Telegram Configuration** (October 2025): Telegram bot integration for task reminder notifications
   - Admin-only settings page at /settings/telegram
-  - Configurable fields: bot token, chat ID, notification preferences (enabled, notify overdue, notify today)
+  - Configurable fields: bot token, chat ID, notification preferences (enabled, notify overdue, notify today), reminder time
   - Bot token encryption using AES-256-CBC with SESSION_SECRET as encryption key
   - Token required on initial setup, optional on updates (existing token retained)
+  - Configurable reminder time: admin can set custom time for daily Telegram reminders (default: 08:00)
   - Settings stored in TelegramSettings database table
   - Supports sending reminders to Telegram chat/group for tasks due today or overdue
-- **Automated Email Notifications** (October 2025): Daily email reminders for tasks due today
-  - Scheduled via node-cron with configurable reminder time (default: 8:00 AM)
-  - Dynamic scheduler updates when admin changes reminder time in SMTP settings
-  - Automatically identifies tasks with nextDue falling on current date
-  - Sends formatted HTML email with table of tasks (printer, task name, priority)
-  - Recipients gathered from PrinterEmailRecipient table (unique emails across all printers)
-  - Uses encrypted SMTP settings from database (AES-256-CBC with SESSION_SECRET)
-  - Admin-only test endpoint at POST /api/test/send-task-reminders for manual testing
-  - Shared getTasksDueToday() function eliminates logic duplication
-  - Robust error handling for missing SMTP config, malformed encryption, send failures
+- **Automated Notifications** (October 2025): Dual scheduler system for email and Telegram reminders
+  - **Dual Scheduler Architecture**: Separate independent schedulers for email and Telegram notifications
+    - Each system has its own configurable reminder time stored in database
+    - Email scheduler (updateEmailScheduler) reads from SMTPSettings.reminderTime
+    - Telegram scheduler (updateTelegramScheduler) reads from TelegramSettings.reminderTime
+    - Schedulers dynamically update when admin changes reminder time in respective settings
+  - **Email Notifications**: Daily email reminders for tasks due today
+    - Scheduled via node-cron with configurable reminder time (default: 08:00)
+    - Sends formatted HTML email with table of tasks (printer, task name, priority)
+    - Recipients gathered from PrinterEmailRecipient table (unique emails across all printers)
+    - Uses encrypted SMTP settings from database (AES-256-CBC with SESSION_SECRET)
+    - Admin-only test endpoint at POST /api/test/send-task-reminders for manual testing
+  - **Telegram Notifications**: Daily Telegram reminders for tasks due today
+    - Scheduled via node-cron with configurable reminder time (default: 08:00)
+    - Sends formatted message to configured chat/group via Telegram bot API
+    - Uses encrypted bot token from database (AES-256-CBC with SESSION_SECRET)
+    - Respects enabled/disabled flags and notification preferences
+  - **Shared Logic**: getTasksDueToday() function used by both notification systems
+  - **Robust Error Handling**: Missing config, malformed encryption, send failures
 
 **QR Scanner Implementation** (`/scan` route):
 - Camera-based QR code scanning using @zxing/browser
