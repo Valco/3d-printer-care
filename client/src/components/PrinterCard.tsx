@@ -1,7 +1,16 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, Lock, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
+import { uk } from "date-fns/locale";
+
+type TaskItem = {
+  id: string;
+  taskTitle: string;
+  nextDue: string | null;
+};
 
 type PrinterCardProps = {
   id: string;
@@ -12,6 +21,9 @@ type PrinterCardProps = {
   overdueCount: number;
   todayCount: number;
   upcomingCount: number;
+  overdueTasks: TaskItem[];
+  todayTasks: TaskItem[];
+  upcomingTasks: TaskItem[];
   onViewDetails: (id: string) => void;
 };
 
@@ -24,9 +36,27 @@ export default function PrinterCard({
   overdueCount,
   todayCount,
   upcomingCount,
+  overdueTasks,
+  todayTasks,
+  upcomingTasks,
   onViewDetails,
 }: PrinterCardProps) {
   const hasOverdue = overdueCount > 0;
+  
+  const allTasks = [
+    ...upcomingTasks.map(t => ({ ...t, status: 'upcoming' as const })),
+    ...todayTasks.map(t => ({ ...t, status: 'today' as const })),
+    ...overdueTasks.map(t => ({ ...t, status: 'overdue' as const })),
+  ];
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '—';
+    try {
+      return format(new Date(dateStr), 'd MMM yyyy', { locale: uk });
+    } catch {
+      return '—';
+    }
+  };
 
   return (
     <Card
@@ -57,24 +87,33 @@ export default function PrinterCard({
             <span className="truncate" data-testid={`text-printer-location-${id}`}>{location}</span>
           </div>
         )}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 flex-1">
-            <div className="flex items-center gap-1 bg-success/20 px-2 py-1 rounded-md border border-success/30">
-              <span className="text-xs font-semibold text-success" data-testid={`count-upcoming-${id}`}>
-                {upcomingCount}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 bg-warning/20 px-2 py-1 rounded-md border border-warning/30">
-              <span className="text-xs font-semibold text-warning" data-testid={`count-today-${id}`}>
-                {todayCount}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 bg-overdue/20 px-2 py-1 rounded-md border border-overdue/30">
-              <span className="text-xs font-semibold text-overdue" data-testid={`count-overdue-${id}`}>
-                {overdueCount}
-              </span>
-            </div>
-          </div>
+        <div className="flex items-center gap-1 flex-wrap" data-testid={`tasks-container-${id}`}>
+          {allTasks.map((task) => {
+            const colorClasses = {
+              upcoming: 'bg-success/80 border-success',
+              today: 'bg-warning/80 border-warning',
+              overdue: 'bg-overdue/80 border-overdue',
+            };
+            
+            return (
+              <Tooltip key={task.id}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 ${colorClasses[task.status]} cursor-help transition-transform hover:scale-110`}
+                    data-testid={`task-cell-${task.id}`}
+                  />
+                </TooltipTrigger>
+                <TooltipContent data-testid={`tooltip-${task.id}`}>
+                  <div className="space-y-1">
+                    <p className="font-semibold">{task.taskTitle}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Термін: {formatDate(task.nextDue)}
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </div>
       </CardContent>
       <CardFooter>

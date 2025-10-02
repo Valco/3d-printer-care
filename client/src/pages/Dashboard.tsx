@@ -13,6 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+type TaskItem = {
+  id: string;
+  taskTitle: string;
+  nextDue: string | null;
+};
+
 type DashboardData = {
   totalPrinters: number;
   overdueCount: number;
@@ -27,6 +33,9 @@ type DashboardData = {
     overdueCount: number;
     todayCount: number;
     upcomingCount: number;
+    overdueTasks: TaskItem[];
+    todayTasks: TaskItem[];
+    upcomingTasks: TaskItem[];
   }>;
 };
 
@@ -202,6 +211,9 @@ export default function Dashboard() {
               overdueCount={printer.overdueCount}
               todayCount={printer.todayCount}
               upcomingCount={printer.upcomingCount}
+              overdueTasks={printer.overdueTasks}
+              todayTasks={printer.todayTasks}
+              upcomingTasks={printer.upcomingTasks}
               onViewDetails={(id) => setSelectedPrinterId(id)}
             />
           ))}
