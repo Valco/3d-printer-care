@@ -33,7 +33,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
 
   const settingsItems = [
     { title: "Категорії", url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
-    { title: "Групи користувачів", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
+    { title: "Користувачі", url: "/settings/users", icon: Users, roles: ["ADMIN"] },
+    { title: "Групи", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
     { title: "Налаштування", url: "/settings", icon: Settings, roles: ["ADMIN"] },
   ];
 

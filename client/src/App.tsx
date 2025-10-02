@@ -15,6 +15,7 @@ import Tasks from "@/pages/Tasks";
 import WorkLogs from "@/pages/WorkLogs";
 import Categories from "@/pages/Categories";
 import Groups from "@/pages/Groups";
+import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
@@ -80,6 +81,7 @@ function Router() {
                 </Route>
                 <Route path="/settings/categories" component={Categories} />
                 <Route path="/settings/groups" component={Groups} />
+                <Route path="/settings/users" component={Users} />
                 <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>

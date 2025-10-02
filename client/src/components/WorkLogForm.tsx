@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
 type WorkLogFormProps = {
   printers: Array<{ id: string; name: string }>;
   tasks: Array<{ id: string; title: string }>;
+  currentUserName: string;
   onSubmit: (data: WorkLogData) => void;
   onCancel: () => void;
 };
@@ -21,6 +22,7 @@ type WorkLogFormProps = {
 export type WorkLogData = {
   printerId: string;
   taskId?: string;
+  axis?: string;
   nozzleSize?: string;
   printHours?: number;
   jobsCount?: number;
@@ -28,13 +30,32 @@ export type WorkLogData = {
   performedBy?: string;
 };
 
-export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: WorkLogFormProps) {
+export default function WorkLogForm({ printers, tasks, currentUserName, onSubmit, onCancel }: WorkLogFormProps) {
   const [formData, setFormData] = useState<WorkLogData>({
     printerId: "",
+    performedBy: currentUserName,
   });
+
+  useEffect(() => {
+    if (currentUserName && formData.performedBy === "") {
+      setFormData(prev => ({ ...prev, performedBy: currentUserName }));
+    }
+  }, [currentUserName]);
+
+  const selectedTask = tasks.find(task => task.id === formData.taskId);
+  const taskTitle = selectedTask?.title.toLowerCase() || "";
+  
+  const isAxisRelated = taskTitle.includes("змащування осей") || taskTitle.includes("змащення осей");
+  const isNozzleRelated = taskTitle.includes("сопло") || taskTitle.includes("дюза");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isAxisRelated && !formData.axis) {
+      alert("Будь ласка, оберіть вісь для змащування");
+      return;
+    }
+    
     onSubmit(formData);
   };
 
@@ -79,7 +100,26 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {isAxisRelated && (
+        <div className="space-y-2">
+          <Label htmlFor="axis">Ось *</Label>
+          <Select
+            value={formData.axis}
+            onValueChange={(value) => setFormData({ ...formData, axis: value })}
+          >
+            <SelectTrigger id="axis" data-testid="select-axis">
+              <SelectValue placeholder="Оберіть вісь" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="X">X</SelectItem>
+              <SelectItem value="Y">Y</SelectItem>
+              <SelectItem value="Z">Z</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {isNozzleRelated && (
         <div className="space-y-2">
           <Label htmlFor="nozzleSize">Розмір сопла</Label>
           <Input
@@ -90,7 +130,9 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
             placeholder="0.4mm"
           />
         </div>
+      )}
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="printHours">Годин друку</Label>
           <Input
@@ -145,7 +187,11 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
         <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
           Скасувати
         </Button>
-        <Button type="submit" disabled={!formData.printerId} data-testid="button-submit">
+        <Button 
+          type="submit" 
+          disabled={!formData.printerId || (isAxisRelated && !formData.axis)} 
+          data-testid="button-submit"
+        >
           Записати роботу
         </Button>
       </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, QrCode, Printer, Loader2 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import PrinterCard from "@/components/PrinterCard";
+import PrinterDetailsDialog from "@/components/PrinterDetailsDialog";
 import { AlertCircle, Clock, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import WorkLogForm from "@/components/WorkLogForm";
@@ -38,9 +39,16 @@ type TaskData = {
   title: string;
 };
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 type WorkLogInput = {
   printerId: string;
   taskId?: string;
+  axis?: string;
   nozzleSize?: string;
   printHours?: number;
   jobsCount?: number;
@@ -51,7 +59,12 @@ type WorkLogInput = {
 export default function Dashboard() {
   const [showWorkLog, setShowWorkLog] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/auth/me"],
+  });
 
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery<DashboardData>({
     queryKey: ["/api/dashboard"],
@@ -168,7 +181,7 @@ export default function Dashboard() {
               visibility={printer.visibility as "PUBLIC" | "RESTRICTED"}
               overdueCount={printer.overdueCount}
               todayCount={printer.todayCount}
-              onViewDetails={(id) => console.log("View details:", id)}
+              onViewDetails={(id) => setSelectedPrinterId(id)}
             />
           ))}
         </div>
@@ -189,6 +202,7 @@ export default function Dashboard() {
             <WorkLogForm
               printers={printers || []}
               tasks={tasks || []}
+              currentUserName={currentUser?.name || ""}
               onSubmit={(data) => createWorkLog.mutate(data)}
               onCancel={() => setShowWorkLog(false)}
             />
@@ -205,6 +219,11 @@ export default function Dashboard() {
           onClose={() => setShowScanner(false)}
         />
       )}
+
+      <PrinterDetailsDialog
+        printerId={selectedPrinterId}
+        onClose={() => setSelectedPrinterId(null)}
+      />
     </div>
   );
 }

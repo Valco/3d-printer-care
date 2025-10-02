@@ -360,14 +360,18 @@ export default function Tasks() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Категорія</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === "none" ? "" : value)}
+                      defaultValue={field.value || "none"}
+                      value={field.value || "none"}
+                    >
                       <FormControl>
                         <SelectTrigger data-testid="select-category">
                           <SelectValue placeholder="Виберіть категорію" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Без категорії</SelectItem>
+                        <SelectItem value="none">Без категорії</SelectItem>
                         {categories?.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.name}

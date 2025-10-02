@@ -8,9 +8,11 @@ import boardRoutes from "./routes/board";
 import worklogsRoutes from "./routes/worklogs";
 import schedulesRoutes from "./routes/schedules";
 import groupsRoutes from "./routes/groups";
+import usersRoutes from "./routes/users";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(authRoutes);
+  app.use(usersRoutes);
   app.use(printersRoutes);
   app.use(tasksRoutes);
   app.use(dashboardRoutes);
