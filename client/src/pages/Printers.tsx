@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, QrCode, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, QrCode, Calendar, Settings } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -110,6 +111,15 @@ export default function Printers() {
     queryKey: ["/api/groups"],
   });
 
+  const { data: allTasks } = useQuery<Array<{
+    id: string;
+    title: string;
+    priority: number;
+    category: { id: string; name: string } | null;
+  }>>({
+    queryKey: ["/api/tasks"],
+  });
+
   const form = useForm<PrinterFormData>({
     resolver: zodResolver(printerSchema),
     defaultValues: {
@@ -203,6 +213,81 @@ export default function Printers() {
       });
     },
   });
+
+  const addSchedule = useMutation({
+    mutationFn: async ({ printerId, taskId }: { printerId: string; taskId: string }) => {
+      const res = await apiRequest("POST", `/api/printers/${printerId}/schedules`, { taskId });
+      return res.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/printers"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      
+      if (editingPrinter) {
+        const updatedPrinters = queryClient.getQueryData<Printer[]>(["/api/printers"]);
+        const updatedPrinter = updatedPrinters?.find(p => p.id === editingPrinter.id);
+        if (updatedPrinter) {
+          setEditingPrinter(updatedPrinter);
+        }
+      }
+      
+      toast({
+        title: "Успіх",
+        description: "Завдання додано до принтера",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Помилка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const removeSchedule = useMutation({
+    mutationFn: async (scheduleId: string) => {
+      const res = await apiRequest("DELETE", `/api/schedules/${scheduleId}`);
+      return res.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/printers"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      
+      if (editingPrinter) {
+        const updatedPrinters = queryClient.getQueryData<Printer[]>(["/api/printers"]);
+        const updatedPrinter = updatedPrinters?.find(p => p.id === editingPrinter.id);
+        if (updatedPrinter) {
+          setEditingPrinter(updatedPrinter);
+        }
+      }
+      
+      toast({
+        title: "Успіх",
+        description: "Завдання видалено з принтера",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Помилка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTaskToggle = (taskId: string, checked: boolean) => {
+    if (!editingPrinter) return;
+    
+    if (checked) {
+      addSchedule.mutate({ printerId: editingPrinter.id, taskId });
+    } else {
+      const schedule = editingPrinter.schedules.find(s => s.taskId === taskId);
+      if (schedule) {
+        removeSchedule.mutate(schedule.id);
+      }
+    }
+  };
 
   const handleCreate = () => {
     setEditingPrinter(null);
@@ -563,6 +648,58 @@ export default function Printers() {
               </DialogFooter>
             </form>
           </Form>
+
+          {editingPrinter && allTasks && (
+            <div className="mt-6 pt-6 border-t space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2" data-testid="text-task-settings">
+                <Settings className="h-5 w-5" />
+                Налаштування завдань
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Оберіть завдання, які актуальні для цього принтера
+              </p>
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12" data-testid="header-task-checkbox">Активне</TableHead>
+                      <TableHead data-testid="header-task-name">Назва завдання</TableHead>
+                      <TableHead data-testid="header-task-cat">Категорія</TableHead>
+                      <TableHead data-testid="header-task-prio">Пріоритет</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allTasks.map((task) => {
+                      const isAssigned = editingPrinter.schedules.some(s => s.taskId === task.id);
+                      const isPending = addSchedule.isPending || removeSchedule.isPending;
+                      
+                      return (
+                        <TableRow key={task.id} data-testid={`row-task-config-${task.id}`}>
+                          <TableCell data-testid={`cell-task-checkbox-${task.id}`}>
+                            <Checkbox
+                              checked={isAssigned}
+                              disabled={isPending}
+                              onCheckedChange={(checked) => handleTaskToggle(task.id, checked as boolean)}
+                              data-testid={`checkbox-task-${task.id}`}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium" data-testid={`cell-task-name-${task.id}`}>
+                            {task.title}
+                          </TableCell>
+                          <TableCell data-testid={`cell-task-cat-${task.id}`}>
+                            {task.category?.name || "—"}
+                          </TableCell>
+                          <TableCell data-testid={`cell-task-prio-${task.id}`}>
+                            {task.priority}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

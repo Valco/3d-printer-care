@@ -1,11 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MapPin, Lock, AlertCircle, Clock, Printer } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MapPin, Lock, AlertCircle, Clock, Printer, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 type PrinterDetails = {
   id: string;
@@ -46,7 +49,19 @@ type PrinterDetailsDialogProps = {
   onClose: () => void;
 };
 
+type Task = {
+  id: string;
+  title: string;
+  priority: number;
+  category: {
+    id: string;
+    name: string;
+  } | null;
+};
+
 export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDetailsDialogProps) {
+  const { toast } = useToast();
+  
   const { data: printer, isLoading: printerLoading } = useQuery<PrinterDetails>({
     queryKey: ["/api/printers", printerId],
     enabled: !!printerId,
@@ -56,6 +71,65 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
     queryKey: ["/api/printers", printerId, "qr"],
     enabled: !!printerId,
   });
+
+  const { data: allTasks, isLoading: tasksLoading } = useQuery<Task[]>({
+    queryKey: ["/api/tasks"],
+  });
+
+  const addSchedule = useMutation({
+    mutationFn: async (taskId: string) => {
+      const res = await apiRequest("POST", `/api/printers/${printerId}/schedules`, { taskId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/printers", printerId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      toast({
+        title: "Успіх",
+        description: "Завдання додано до принтера",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Помилка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const removeSchedule = useMutation({
+    mutationFn: async (scheduleId: string) => {
+      const res = await apiRequest("DELETE", `/api/schedules/${scheduleId}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/printers", printerId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      toast({
+        title: "Успіх",
+        description: "Завдання видалено з принтера",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Помилка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTaskToggle = (taskId: string, checked: boolean) => {
+    if (checked) {
+      addSchedule.mutate(taskId);
+    } else {
+      const schedule = printer?.schedules.find(s => s.task.id === taskId);
+      if (schedule) {
+        removeSchedule.mutate(schedule.id);
+      }
+    }
+  };
 
   const activeTasks = printer?.schedules.filter((s) => s.isActive) || [];
   const now = new Date();
@@ -324,6 +398,68 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
               ) : (
                 <p className="text-muted-foreground text-center py-8" data-testid="text-no-tasks">
                   Немає активних завдань
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2" data-testid="text-task-settings">
+                <Settings className="h-5 w-5" />
+                Налаштування завдань
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Оберіть завдання, які актуальні для цього принтера
+              </p>
+              {tasksLoading ? (
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : allTasks && allTasks.length > 0 ? (
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12" data-testid="header-task-checkbox">Активне</TableHead>
+                        <TableHead data-testid="header-task-name">Назва завдання</TableHead>
+                        <TableHead data-testid="header-task-cat">Категорія</TableHead>
+                        <TableHead data-testid="header-task-prio">Пріоритет</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allTasks.map((task) => {
+                        const isAssigned = printer?.schedules.some(s => s.task.id === task.id) || false;
+                        const isPending = addSchedule.isPending || removeSchedule.isPending;
+                        
+                        return (
+                          <TableRow key={task.id} data-testid={`row-task-config-${task.id}`}>
+                            <TableCell data-testid={`cell-task-checkbox-${task.id}`}>
+                              <Checkbox
+                                checked={isAssigned}
+                                disabled={isPending}
+                                onCheckedChange={(checked) => handleTaskToggle(task.id, checked as boolean)}
+                                data-testid={`checkbox-task-${task.id}`}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium" data-testid={`cell-task-name-${task.id}`}>
+                              {task.title}
+                            </TableCell>
+                            <TableCell data-testid={`cell-task-cat-${task.id}`}>
+                              {task.category?.name || "—"}
+                            </TableCell>
+                            <TableCell data-testid={`cell-task-prio-${task.id}`}>
+                              {task.priority}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8" data-testid="text-no-all-tasks">
+                  Немає доступних завдань
                 </p>
               )}
             </div>
