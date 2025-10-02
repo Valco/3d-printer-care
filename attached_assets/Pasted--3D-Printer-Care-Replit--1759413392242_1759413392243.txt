@@ -1,0 +1,1034 @@
+# Промпт для створення застосунку "3D Printer Care" на Replit
+
+## 🎯 Загальний опис застосунку
+
+Створи комплексний веб-додаток для управління обслуговуванням 3D-принтерів з автоматизацією графіків, журналами робіт, системою нотифікацій та груповим доступом.
+
+---
+
+## 📋 Технічний стек
+
+- **Backend**: Node.js + Express + TypeScript
+- **Templating**: EJS (server-side rendering)
+- **Database**: PostgreSQL (Replit Database) з Prisma ORM
+- **Styling**: PicoCSS (через CDN)
+- **Authentication**: express-session + bcrypt
+- **Scheduling**: node-cron
+- **Validation**: express-validator
+- **QR Codes**: qrcode library (генерація) + @zxing/library (сканування)
+- **Email**: nodemailer
+- **i18n**: i18n (українська та англійська мови)
+- **Flash Messages**: connect-flash
+
+---
+
+## 🏗️ Структура проекту
+
+```
+/server
+  /routes       - Маршрути (auth, dashboard, printers, tasks, board, logs, settings, scan, api)
+  /middleware   - Authentication та authorization
+  /services     - Бізнес-логіка (digest notifications, task scheduling)
+  app.ts        - Express app configuration
+  index.ts      - Server entry point
+
+/views
+  /auth         - Login/Register сторінки
+  /dashboard    - Головна панель
+  /printers     - Управління принтерами
+  /tasks        - Завдання обслуговування
+  /board        - Дошка завдань
+  /logs         - Журнали робіт
+  /settings     - Налаштування (categories, users, groups)
+  /scan         - QR-сканер
+  /partials     - Спільні компоненти (nav, flash-messages)
+
+/prisma
+  schema.prisma - База даних схема
+  seed.ts       - Тестові дані
+
+/public
+  /css          - Custom styles
+  
+/locales
+  ua.json       - Українські переклади
+  en.json       - Англійські переклади
+```
+
+---
+
+## 📊 База даних (Prisma Schema)
+
+### User (Користувачі)
+```prisma
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("VIEWER") // ADMIN, OPERATOR, VIEWER
+  groupId      String?
+  group        UserGroup? @relation(fields: [groupId], references: [id])
+  createdAt    DateTime @default(now())
+}
+```
+
+### UserGroup (Групи користувачів)
+```prisma
+model UserGroup {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  users       User[]
+  printerAccess PrinterGroupAccess[]
+  createdAt   DateTime @default(now())
+}
+```
+
+### TaskCategory (Категорії завдань)
+```prisma
+model TaskCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  tasks       MaintenanceTask[]
+  createdAt   DateTime @default(now())
+}
+```
+
+### Printer (Принтери)
+```prisma
+model Printer {
+  id            String   @id @default(uuid())
+  name          String
+  model         String?
+  serialNumber  String?
+  location      String?
+  ipAddress     String?
+  notes         String?
+  visibility    String   @default("PUBLIC") // PUBLIC, RESTRICTED
+  printHours    Int      @default(0)
+  jobsCount     Int      @default(0)
+  schedules     PrinterTaskSchedule[]
+  workLogs      WorkLog[]
+  groupAccess   PrinterGroupAccess[]
+  emailRecipients PrinterEmailRecipient[]
+  createdAt     DateTime @default(now())
+}
+```
+
+### PrinterGroupAccess (Доступ груп до принтерів)
+```prisma
+model PrinterGroupAccess {
+  id        String    @id @default(uuid())
+  printerId String
+  groupId   String
+  printer   Printer   @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  group     UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  
+  @@unique([printerId, groupId])
+}
+```
+
+### PrinterEmailRecipient (Email отримувачі для принтерів)
+```prisma
+model PrinterEmailRecipient {
+  id        String   @id @default(uuid())
+  printerId String
+  email     String
+  printer   Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@unique([printerId, email])
+}
+```
+
+### MaintenanceTask (Завдання обслуговування)
+```prisma
+model MaintenanceTask {
+  id                  String   @id @default(uuid())
+  title               String
+  categoryId          String?
+  category            TaskCategory? @relation(fields: [categoryId], references: [id])
+  intervalType        String   // DAYS, PRINT_HOURS, JOB_COUNT
+  intervalValue       Int
+  defaultInstructions String?
+  priority            Int      @default(5) // 1-10
+  schedules           PrinterTaskSchedule[]
+  workLogs            WorkLog[]
+  createdAt           DateTime @default(now())
+}
+```
+
+### PrinterTaskSchedule (Графіки завдань для принтерів)
+```prisma
+model PrinterTaskSchedule {
+  id              String   @id @default(uuid())
+  printerId       String
+  taskId          String
+  printer         Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  task            MaintenanceTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  lastCompleted   DateTime?
+  nextDue         DateTime?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  @@unique([printerId, taskId])
+}
+```
+
+### WorkLog (Журнали робіт)
+```prisma
+model WorkLog {
+  id                String   @id @default(uuid())
+  date              DateTime @default(now())
+  printerId         String
+  taskId            String?
+  printer           Printer  @relation(fields: [printerId], references: [id])
+  task              MaintenanceTask? @relation(fields: [taskId], references: [id])
+  nozzleSize        String?
+  printHoursAtLog   Int?
+  jobsCountAtLog    Int?
+  details           String?
+  performedBy       String?
+  createdAt         DateTime @default(now())
+}
+```
+
+### Notification (Системні нотифікації)
+```prisma
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // DIGEST, ALERT
+  title     String
+  message   String
+  sentAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+```
+
+---
+
+## 🗃️ Тестові дані (seed.ts)
+
+### 1. Групи користувачів (4)
+```typescript
+const groups = [
+  { name: "Адмін", description: "Адміністратори системи" },
+  { name: "Технік", description: "Технічні спеціалісти" },
+  { name: "Оператор", description: "Оператори принтерів" },
+  { name: "Користувач", description: "Користувачі з read-only доступом" }
+];
+```
+
+### 2. Користувачі (4) - пароль для всіх: `admin123`
+```typescript
+const users = [
+  { name: "Admin User", email: "admin@example.com", role: "ADMIN", group: "Адмін" },
+  { name: "Technician User", email: "technician@example.com", role: "OPERATOR", group: "Технік" },
+  { name: "Operator User", email: "operator@example.com", role: "OPERATOR", group: "Оператор" },
+  { name: "Viewer User", email: "viewer@example.com", role: "VIEWER", group: "Користувач" }
+];
+```
+
+### 3. Категорії завдань (5)
+```typescript
+const categories = [
+  { name: "Калібрування", description: "Калібрування та налаштування" },
+  { name: "Очищення", description: "Процедури очищення" },
+  { name: "Змащування", description: "Змащування механізмів" },
+  { name: "Заміна частин", description: "Заміна зношених компонентів" },
+  { name: "Огляд", description: "Регулярні огляди" }
+];
+```
+
+### 4. Принтери (2)
+```typescript
+const printers = [
+  {
+    name: "X1C -002",
+    model: "BambuLab X1C",
+    serialNumber: "X1C2023-002",
+    location: "Lab Room 1",
+    ipAddress: "192.168.1.101",
+    visibility: "PUBLIC",
+    printHours: 1250,
+    jobsCount: 420
+  },
+  {
+    name: "A1-001",
+    model: "BambuLab A1",
+    serialNumber: "A12023-001",
+    location: "Lab Room 2",
+    ipAddress: "192.168.1.102",
+    visibility: "RESTRICTED",
+    printHours: 850,
+    jobsCount: 310
+  }
+];
+```
+
+### 5. Завдання обслуговування (9)
+```typescript
+const tasks = [
+  { title: "Калібрування столу", category: "Калібрування", intervalType: "DAYS", intervalValue: 30, priority: 9 },
+  { title: "Очищення екструдера", category: "Очищення", intervalType: "PRINT_HOURS", intervalValue: 100, priority: 8 },
+  { title: "Заміна сопла", category: "Заміна частин", intervalType: "PRINT_HOURS", intervalValue: 500, priority: 7 },
+  { title: "Змащування осей", category: "Змащування", intervalType: "DAYS", intervalValue: 60, priority: 6 },
+  { title: "Перевірка ременів", category: "Огляд", intervalType: "DAYS", intervalValue: 90, priority: 5 },
+  { title: "Очищення столу", category: "Очищення", intervalType: "JOB_COUNT", intervalValue: 50, priority: 4 },
+  { title: "Калібрування потоку", category: "Калібрування", intervalType: "DAYS", intervalValue: 45, priority: 3 },
+  { title: "Заміна фільтра", category: "Заміна частин", intervalType: "PRINT_HOURS", intervalValue: 300, priority: 2 },
+  { title: "Загальний огляд", category: "Огляд", intervalType: "DAYS", intervalValue: 14, priority: 10 }
+];
+```
+
+### 6. Графіки завдань
+- Прив'язати всі 9 завдань до обох принтерів
+- Встановити `lastCompleted` на 80% від intervalValue назад (щоб деякі були "upcoming")
+
+### 7. Email отримувачі
+- Додати 2-3 тестові email адреси для кожного принтера
+
+---
+
+## ⚙️ Основний функціонал
+
+### 1. Аутентифікація та авторизація
+- **Register**: Реєстрація з name, email, password (мін 6 символів)
+  - Нові користувачі отримують роль VIEWER за замовчуванням
+  - Валідація: email format, password length
+  - Error handling з try-catch блоками
+- **Login**: Вхід з email та password
+  - Bcrypt перевірка паролю
+  - Session management (userId, email, name, role)
+  - Flash message після успішного входу
+  - Error handling для database та bcrypt помилок
+- **Logout**: Знищення сесії та redirect на /login
+- **Role-based access**: 
+  - ADMIN: повний доступ
+  - OPERATOR: доступ до CRUD операцій (printers, tasks, logs)
+  - VIEWER: тільки читання (read-only)
+
+### 2. Dashboard (Панель керування)
+- **Статистика**:
+  - Total Printers (загальна кількість)
+  - Overdue tasks (прострочені завдання, червоний)
+  - Today tasks (завдання на сьогодні, помаранчевий)
+  - Upcoming tasks (майбутні завдання, зелений)
+- **Quick actions**:
+  - "+ Record Work" (тільки ADMIN/OPERATOR)
+  - "Scan QR" (всі ролі)
+  - "+ New Printer" (тільки ADMIN/OPERATOR)
+- **Printers list**:
+  - Картки з назвою, моделлю, локацією
+  - Статус завдань (overdue/today counts)
+  - Червона рамка для принтерів з overdue tasks
+  - "View Details" кнопка
+  - 🔒 іконка для RESTRICTED принтерів
+- **Group-based visibility**:
+  - Користувачі бачать тільки принтери своєї групи (якщо RESTRICTED)
+  - PUBLIC принтери бачать всі
+
+### 3. Printers (Управління принтерами)
+- **List view**:
+  - Таблиця з назвою, моделлю, локацією, статусом
+  - Підрахунок overdue/today tasks для кожного
+  - Фільтрація за visibility групою
+- **Create/Edit**:
+  - Форма: name*, model, serialNumber, location, ipAddress, notes
+  - Visibility: PUBLIC / RESTRICTED
+  - Print hours, Jobs count (лічильники)
+  - Group access (для RESTRICTED принтерів)
+  - Email recipients (для нотифікацій)
+- **Details page**:
+  - Основна інформація
+  - QR код (генерація через qrcode library)
+  - Список активних графіків завдань з датами
+  - Історія work logs
+  - Статистика: print hours, jobs count
+- **Delete**: Cascade видалення schedules, logs, access records
+
+### 4. Tasks (Завдання обслуговування)
+- **List view**:
+  - Таблиця з title, category, interval, priority
+  - Сортування за priority (desc), потім за title (asc)
+- **Create/Edit**:
+  - Title* (назва)
+  - Category (випадаючий список)
+  - Interval type: DAYS / PRINT_HOURS / JOB_COUNT
+  - Interval value (число)
+  - Priority (1-10, slider або input)
+  - Default instructions (текстове поле)
+- **Validation**:
+  - Priority: clamp до 1-10
+  - Interval value: позитивне число
+- **Delete**: Cascade видалення schedules та logs
+- **Authorization**: тільки ADMIN/OPERATOR
+
+### 5. Task Board (Дошка завдань)
+- **Фільтри**:
+  - За принтером (dropdown)
+  - За статусом: All / Overdue / Today / Upcoming
+  - За категорією (якщо є)
+- **Список завдань**:
+  - Printer name + Task title
+  - Last completed date
+  - Next due date
+  - Статус (overdue - червоний, today - помаранчевий, upcoming - зелений)
+  - "Complete" кнопка (тільки ADMIN/OPERATOR)
+- **Complete action**:
+  - Відкрити Quick Complete modal або redirect на /logs/new
+  - Оновити lastCompleted та nextDue дати
+  - Оновити printHours/jobsCount якщо потрібно
+
+### 6. Work Logs (Журнали робіт)
+- **List view**:
+  - Таблиця: дата, принтер, завдання, виконавець, деталі
+  - Сортування за датою (desc)
+  - Фільтрація за принтером
+- **Create**:
+  - Date (datetime picker, default: now)
+  - Printer* (dropdown)
+  - Task (dropdown з завданнями цього принтера)
+  - Nozzle size (опціонально)
+  - Print hours at log (автозаповнення з printer.printHours)
+  - Jobs count at log (автозаповнення з printer.jobsCount)
+  - Details (textarea)
+  - Performed by (текст, автозаповнення з user.name)
+- **Логіка**:
+  - Оновити schedule.lastCompleted
+  - Перерахувати schedule.nextDue на основі intervalType:
+    - DAYS: lastCompleted + intervalValue days
+    - PRINT_HOURS: коли printer.printHours >= (printHoursAtLog + intervalValue)
+    - JOB_COUNT: коли printer.jobsCount >= (jobsCountAtLog + intervalValue)
+  - Опціонально оновити printer.printHours та printer.jobsCount
+- **Delete**: тільки ADMIN
+- **Authorization**: ADMIN/OPERATOR для create/edit
+
+### 7. Settings (Налаштування) - тільки ADMIN
+- **Task Categories**:
+  - CRUD операції
+  - Name*, description
+  - Показати кількість завдань в кожній категорії
+- **Users**:
+  - List: name, email, role, group
+  - Create/Edit: name*, email*, password (тільки при create), role, group
+  - Delete (не можна видалити себе)
+  - Password: bcrypt hash
+- **User Groups**:
+  - CRUD операції
+  - Name*, description
+  - Показати кількість користувачів в групі
+  - Не можна видалити групу з користувачами
+- **Authorization**: тільки ADMIN має доступ до /settings
+
+### 8. QR Scanner (Сканування QR)
+- **Camera integration**:
+  - @zxing/library для browser-based scanning
+  - Video preview з camera
+  - Scan overlay (зелена рамка 250x250px)
+- **Controls**:
+  - "Start Scanning" кнопка
+  - "Stop" кнопка (показується під час сканування)
+  - "Back to Dashboard" link
+- **Scan logic**:
+  - Detect QR code з URL pattern `/printers/:id`
+  - Success message: "Printer Found: {id}"
+  - Auto-redirect до /printers/:id через 1 секунду
+  - Error handling для camera permissions
+  - Invalid QR message для не-printer кодів
+- **i18n**: всі тексти перекладені (ua/en)
+- **data-testid**: всі інтерактивні елементи
+
+### 9. Email Notifications
+- **Daily digest** (9:00 AM через node-cron):
+  - Збирає overdue та today tasks
+  - Надсилає на email recipients кожного принтера
+  - Групує по принтерах
+  - Зберігає в Notification table
+- **Manual trigger**: /api/admin/run-digest (тільки ADMIN)
+- **SMTP configuration** (env vars):
+  - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+  - Graceful fallback якщо SMTP не налаштовано
+
+### 10. Data Export
+- **JSON export**: /printers/export/json
+- **CSV export**: /printers/export/csv
+- Включає: printers, tasks, schedules, work logs
+- Authorization: тільки ADMIN/OPERATOR
+
+### 11. Flash Messages System
+- **connect-flash** middleware
+- **Types**: success, error, info
+- **Locations**:
+  - Після CRUD операцій (create, update, delete)
+  - Після login/register
+  - Після email operations
+- **UI**: views/partials/flash-messages.ejs
+  - Animated slide-in
+  - Auto-dismiss через 5 секунд
+  - Різні кольори по типу
+- **Integration**: включено в усі основні pages
+
+### 12. Dark/Light Theme Toggle
+- **Toggle button** в navigation (🌙 / ☀️ icons)
+- **localStorage** persistence: зберігає вибір теми
+- **PicoCSS** data-theme="light|dark" switching
+- **Implementation**:
+  - Inline script в nav.ejs та layout.ejs
+  - Різні id для уникнення конфліктів
+  - Ініціалізація при завантаженні сторінки
+
+### 13. Internationalization (i18n)
+- **i18n middleware**: defaultLocale 'ua', locales ['ua', 'en']
+- **Cookie persistence**: зберігає вибір мови в cookie 'lang'
+- **Language toggle**: кнопка в navigation (UA / EN)
+- **POST /api/change-language**: endpoint для зміни мови
+  - CSRF token захист
+  - Cookie + setLocale
+  - Page reload після зміни
+- **Translations**:
+  - locales/ua.json: всі українські тексти
+  - locales/en.json: всі англійські тексти
+  - Охоплення: navigation, dashboard, printers, scan, common, auth, roles
+- **Views**: використання `<%= __('key') %>` для перекладів
+
+### 14. Responsive Design
+- **Breakpoints**:
+  - Mobile: <768px (1 column)
+  - Tablet: 768-992px (2 columns)
+  - Desktop: >992px (3 columns)
+- **Mobile optimizations**:
+  - Stack action buttons vertically
+  - Full-width touch targets
+  - Remove max-height constraints
+  - Flex-wrap для headers
+- **CSS**: custom.css з media queries
+
+---
+
+## 🎨 UI/UX вимоги
+
+### Styling
+- **PicoCSS framework** через CDN (версія 2)
+- **Custom CSS** в public/css/custom.css для:
+  - Responsive grids (.printers-grid, .cards-grid)
+  - Flash messages animations
+  - Mobile breakpoints
+  - Dark/light theme adjustments
+
+### Navigation
+- **Sticky header** з nav links:
+  - App name (зліва)
+  - Dashboard, Printers, Tasks, Task Board, Scan QR, Settings (центр)
+  - Theme toggle (🌙/☀️)
+  - Language toggle (UA/EN)
+  - User dropdown (праворуч): role + logout
+- **Active link** highlighting
+- **Conditional links**: Settings тільки для ADMIN
+
+### Forms
+- **Validation messages**: inline errors під полями
+- **Required fields**: позначені *
+- **Placeholders**: допоміжні тексти
+- **Buttons**: 
+  - Primary для submit
+  - Secondary для cancel
+  - Danger для delete (з confirm dialog)
+
+### Status colors
+- **Overdue**: червоний (var(--pico-del-color))
+- **Today**: помаранчевий (var(--pico-color-amber-500))
+- **Upcoming**: зелений (var(--pico-ins-color))
+- **Restricted**: 🔒 іконка
+
+### Empty states
+- **No data messages**: "No printers found", "Create your first printer"
+- **Conditional buttons**: тільки для ADMIN/OPERATOR
+- **Helpful hints**: "You need ADMIN access to manage settings"
+
+---
+
+## 🧪 Тестові сценарії
+
+### Тест 1: Аутентифікація
+**Мета**: Перевірити систему login/logout
+
+**Кроки**:
+1. Відкрити /login
+2. Ввести: admin@example.com / admin123
+3. Натиснути "Login"
+4. **Перевірити**: redirect на /dashboard
+5. **Перевірити**: flash message "Вітаємо, Admin User!"
+6. **Перевірити**: user dropdown показує "Admin User" + "Administrator"
+7. Натиснути logout в dropdown
+8. **Перевірити**: redirect на /login
+
+**Негативний тест**:
+1. Ввести невірний пароль: admin@example.com / wrongpass
+2. **Перевірити**: залишилися на /login
+3. **Перевірити**: error message "Invalid email or password"
+4. **Перевірити**: немає 500 Internal Server Error
+
+---
+
+### Тест 2: Role-based Access (VIEWER)
+**Мета**: Перевірити read-only доступ для VIEWER
+
+**Кроки**:
+1. Login як viewer@example.com / admin123
+2. Перейти на /dashboard
+3. **Перевірити**: немає кнопок "+ Record Work", "+ New Printer"
+4. **Перевірити**: є кнопка "Scan QR" (доступна всім)
+5. Перейти на /printers
+6. **Перевірити**: немає кнопки "+ New Printer"
+7. **Перевірити**: немає кнопок "Edit" / "Delete" в таблиці
+8. Спробувати відкрити /printers/new напряму (URL)
+9. **Перевірити**: redirect або 403 Forbidden
+10. Спробувати відкрити /settings
+11. **Перевірити**: redirect або 403 Forbidden
+
+---
+
+### Тест 3: Створення принтера (ADMIN/OPERATOR)
+**Мета**: Перевірити CRUD операції для принтерів
+
+**Кроки**:
+1. Login як admin@example.com / admin123
+2. Перейти на /printers
+3. Натиснути "+ New Printer"
+4. Заповнити форму:
+   - Name: "Test Printer 001"
+   - Model: "Creality Ender 3"
+   - Location: "Lab Room 3"
+   - Visibility: "PUBLIC"
+5. Натиснути "Create Printer"
+6. **Перевірити**: redirect на /printers
+7. **Перевірити**: flash message "Printer created successfully"
+8. **Перевірити**: новий принтер в списку
+9. Натиснути "View Details" на новому принтері
+10. **Перевірити**: показується QR код
+11. **Перевірити**: показується основна інформація
+12. Натиснути "Edit"
+13. Змінити Name на "Test Printer 002"
+14. Натиснути "Update"
+15. **Перевірити**: flash message "Printer updated successfully"
+16. **Перевірити**: оновлена назва в списку
+
+---
+
+### Тест 4: Task Scheduling
+**Мета**: Перевірити систему графіків завдань
+
+**Кроки**:
+1. Login як admin@example.com
+2. Перейти на /tasks
+3. **Перевірити**: список 9 завдань
+4. **Перевірити**: сортування за priority (desc)
+5. Натиснути на перше завдання (найвищий priority)
+6. Перейти на /printers та обрати X1C-002
+7. На сторінці принтера перейти до "Task Schedules"
+8. **Перевірити**: принаймні одне завдання має status "Upcoming"
+9. **Перевірити**: принаймні одне завдання показує "Next Due" дату
+10. Перейти на /board (Task Board)
+11. Вибрати фільтр "Overdue" (якщо є overdue tasks)
+12. **Перевірити**: показуються тільки overdue завдання червоним
+
+---
+
+### Тест 5: Work Log Recording
+**Мета**: Перевірити запис робіт та оновлення графіків
+
+**Кроки**:
+1. Login як technician@example.com / admin123
+2. Перейти на /logs/new або натиснути "+ Record Work" на dashboard
+3. Заповнити форму:
+   - Printer: "X1C-002"
+   - Task: "Очищення екструдера"
+   - Nozzle size: "0.4mm"
+   - Details: "Виконано планове очищення"
+4. Натиснути "Save Work Log"
+5. **Перевірити**: redirect на /logs
+6. **Перевірити**: flash message "Work log created successfully"
+7. **Перевірити**: новий запис в таблиці
+8. Перейти на /printers → X1C-002 details
+9. Перейти до "Task Schedules"
+10. Знайти "Очищення екструдера"
+11. **Перевірити**: "Last Completed" оновлено на сьогоднішню дату
+12. **Перевірити**: "Next Due" перераховано (lastCompleted + intervalValue)
+
+---
+
+### Тест 6: Group-based Visibility
+**Мета**: Перевірити доступ до RESTRICTED принтерів
+
+**Setup**: 
+- Принтер A1-001 має visibility="RESTRICTED"
+- Група "Технік" має доступ до A1-001
+- Група "Оператор" НЕ має доступ до A1-001
+
+**Кроки 1** (Technician - має доступ):
+1. Login як technician@example.com / admin123
+2. Перейти на /dashboard
+3. **Перевірити**: A1-001 показується в списку принтерів
+4. **Перевірити**: 🔒 іконка присутня (RESTRICTED)
+5. Натиснути "View Details" на A1-001
+6. **Перевірити**: сторінка принтера відкривається
+7. **Перевірити**: можна побачити всі дані
+
+**Кроки 2** (Operator - немає доступу):
+1. Logout та login як operator@example.com / admin123
+2. Перейти на /dashboard
+3. **Перевірити**: A1-001 НЕ показується в списку
+4. **Перевірити**: X1C-002 (PUBLIC) показується
+5. Спробувати відкрити /printers/{A1-001-id} напряму (URL)
+6. **Перевірити**: redirect або 403 Forbidden
+
+---
+
+### Тест 7: QR Scanner
+**Мета**: Перевірити функціонал QR сканера
+
+**Кроки**:
+1. Login як admin@example.com
+2. Перейти на /scan
+3. **Перевірити**: H1 "QR Code Scanner" (EN) або "Сканер QR-кодів" (UA)
+4. **Перевірити**: description текст присутній
+5. **Перевірити**: кнопка "Start Scanning" присутня
+6. Натиснути "Start Scanning"
+7. **Перевірити**: video element з'являється
+8. **Перевірити**: кнопка "Stop" з'являється
+9. **Перевірити**: зелений scan overlay (250x250px) присутній
+10. (Мануально) Показати QR код принтера (з /printers/{id} details)
+11. **Перевірити**: success message "Printer Found: {id}"
+12. **Перевірити**: auto-redirect на /printers/{id} через 1 секунду
+
+**Негативний тест**:
+1. Показати недійсний QR код (не printer URL)
+2. **Перевірити**: error message "Invalid QR Code: {text}"
+3. **Перевірити**: залишилися на /scan
+
+---
+
+### Тест 8: Flash Messages
+**Мета**: Перевірити систему flash повідомлень
+
+**Кроки**:
+1. Login як admin@example.com
+2. **Перевірити**: success flash "Вітаємо, Admin User!" на dashboard
+3. **Перевірити**: flash автоматично зникає через ~5 секунд
+4. Перейти на /settings → Task Categories
+5. Створити нову категорію "Тестова категорія"
+6. **Перевірити**: success flash "Category created successfully"
+7. Видалити категорію
+8. **Перевірити**: success flash "Category deleted successfully"
+9. Спробувати створити категорію з порожньою назвою
+10. **Перевірити**: error flash або inline error
+
+---
+
+### Тест 9: Dark/Light Theme
+**Мета**: Перевірити перемикання теми
+
+**Кроки**:
+1. Login як admin@example.com
+2. **Перевірити**: default theme (light або dark залежно від system preference)
+3. Натиснути theme toggle в navigation (🌙 або ☀️ іконка)
+4. **Перевірити**: тема змінилася (data-theme="light" ↔ "dark")
+5. **Перевірити**: іконка змінилася (🌙 ↔ ☀️)
+6. Перейти на іншу сторінку (наприклад, /printers)
+7. **Перевірити**: тема зберіглася (localStorage persistence)
+8. Натиснути theme toggle знову
+9. **Перевірити**: тема повернулася назад
+10. Закрити та відкрити браузер
+11. **Перевірити**: вибрана тема залишилася
+
+---
+
+### Тест 10: Internationalization (i18n)
+**Мета**: Перевірити систему багатомовності
+
+**Кроки**:
+1. Login як admin@example.com
+2. **Перевірити**: default мова Ukrainian (nav links, dashboard тексти)
+3. **Перевірити**: navigation показує "Панель керування", "Принтери", і т.д.
+4. Натиснути language toggle (UA → EN)
+5. **Перевірити**: page reload
+6. **Перевірити**: navigation англійською: "Dashboard", "Printers", "Tasks"
+7. **Перевірити**: H1 на dashboard: "Dashboard"
+8. **Перевірити**: user role: "Administrator" (замість "Адміністратор")
+9. Перейти на /printers
+10. **Перевірити**: H1 "Printers", кнопка "+ New Printer"
+11. Перейти на /scan
+12. **Перевірити**: H1 "QR Code Scanner", кнопка "Start Scanning"
+13. Натиснути language toggle (EN → UA)
+14. **Перевірити**: все повернулося на українську
+15. Закрити та відкрити браузер
+16. **Перевірити**: мова зберіглася (cookie persistence)
+
+---
+
+### Тест 11: Settings (ADMIN only)
+**Мета**: Перевірити доступ до налаштувань
+
+**Кроки 1** (ADMIN - має доступ):
+1. Login як admin@example.com
+2. Перейти на /settings
+3. **Перевірити**: tabs "Task Categories", "Users", "User Groups"
+4. Перейти на "Task Categories"
+5. **Перевірити**: список 5 категорій
+6. Створити нову категорію "Test Category"
+7. **Перевірити**: flash message "Category created"
+8. Перейти на "Users"
+9. **Перевірити**: список 4 користувачів
+10. Натиснути "Edit" на viewer@example.com
+11. Змінити role на "OPERATOR"
+12. **Перевірити**: flash message "User updated"
+13. Перейти на "User Groups"
+14. **Перевірити**: список 4 груп
+15. Натиснути на групу "Оператор"
+16. **Перевірити**: показується кількість користувачів в групі
+
+**Кроки 2** (OPERATOR - немає доступу):
+1. Logout та login як operator@example.com
+2. **Перевірити**: в navigation немає link "Settings"
+3. Спробувати відкрити /settings напряму (URL)
+4. **Перевірити**: redirect на /dashboard або 403 Forbidden
+
+---
+
+### Тест 12: Email Digest (Manual Trigger)
+**Мета**: Перевірити email нотифікації
+
+**Prerequisite**: Налаштувати SMTP або використовувати mock/log режим
+
+**Кроки**:
+1. Login як admin@example.com
+2. Створити overdue task (встановити lastCompleted у минуле, nextDue < today)
+3. Додати email recipient до принтера з overdue task
+4. Відкрити DevTools → Network tab
+5. Викликати /api/admin/run-digest (можна через fetch у console)
+6. **Перевірити**: response 200 OK
+7. **Перевірити**: JSON response містить overdue та dueToday counts
+8. **Перевірити**: в Notification table з'явився новий запис (type: "DIGEST")
+9. (Якщо SMTP налаштовано) Перевірити email inbox
+10. **Перевірити**: лист отримано з темою "Daily Maintenance Digest"
+11. **Перевірити**: лист містить overdue tasks list
+
+---
+
+### Тест 13: Data Export
+**Мета**: Перевірити експорт даних
+
+**Кроки**:
+1. Login як admin@example.com
+2. Перейти на /printers
+3. Натиснути "Export JSON" (або знайти link)
+4. **Перевірити**: файл printers-export.json завантажується
+5. Відкрити файл
+6. **Перевірити**: JSON містить printers array
+7. **Перевірити**: JSON містить tasks, schedules, workLogs
+8. Повернутися на /printers
+9. Натиснути "Export CSV"
+10. **Перевірити**: файл printers-export.csv завантажується
+11. Відкрити файл у Excel/Numbers
+12. **Перевірити**: CSV містить columns: name, model, location, status
+
+---
+
+### Тест 14: Responsive Design (Mobile)
+**Мета**: Перевірити адаптивність на мобільних пристроях
+
+**Кроки**:
+1. Відкрити DevTools → Toggle device toolbar (Ctrl+Shift+M)
+2. Вибрати iPhone SE (375x667)
+3. Login як admin@example.com
+4. Перейти на /dashboard
+5. **Перевірити**: stats cards в 1 колонку (не 4)
+6. **Перевірити**: action buttons vertical stack (не horizontal)
+7. **Перевірити**: printers cards в 1 колонку
+8. Перейти на /printers
+9. **Перевірити**: таблиця responsive (не overflow)
+10. **Перевірити**: "Edit" / "Delete" кнопки accessible (не overlap)
+11. Перейти на /scan
+12. **Перевірити**: video container fits screen width
+13. **Перевірити**: кнопки "Start Scanning" / "Stop" full-width
+
+---
+
+### Тест 15: Scheduler Calculation (Interval Types)
+**Мета**: Перевірити різні типи інтервалів
+
+**Setup**: Створити 3 завдання з різними intervalType
+
+**Test 1 - DAYS**:
+1. Task: "Test Task DAYS", intervalType: "DAYS", intervalValue: 7
+2. Прив'язати до X1C-002
+3. Записати work log (date: today)
+4. **Перевірити**: schedule.lastCompleted = today
+5. **Перевірити**: schedule.nextDue = today + 7 days
+
+**Test 2 - PRINT_HOURS**:
+1. Task: "Test Task HOURS", intervalType: "PRINT_HOURS", intervalValue: 100
+2. Прив'язати до X1C-002 (current printHours: 1250)
+3. Записати work log (printHoursAtLog: 1250)
+4. **Перевірити**: schedule.lastCompleted = today
+5. **Перевірити**: schedule.nextDue буде коли printer.printHours >= 1350
+
+**Test 3 - JOB_COUNT**:
+1. Task: "Test Task JOBS", intervalType: "JOB_COUNT", intervalValue: 50
+2. Прив'язати до X1C-002 (current jobsCount: 420)
+3. Записати work log (jobsCountAtLog: 420)
+4. **Перевірити**: schedule.lastCompleted = today
+5. **Перевірити**: schedule.nextDue буде коли printer.jobsCount >= 470
+
+---
+
+## 🚀 Deployment Checklist
+
+### 1. Environment Variables (Secrets)
+- **SESSION_SECRET**: random string (required)
+- **DATABASE_URL**: Replit Database connection string (auto)
+- **SMTP_HOST**: email server host (optional)
+- **SMTP_PORT**: email server port (optional)
+- **SMTP_USER**: email username (optional)
+- **SMTP_PASS**: email password (optional)
+- **SMTP_FROM**: sender email (optional)
+
+### 2. Database Setup
+```bash
+# Development
+npx prisma migrate dev
+npx tsx prisma/seed.ts
+
+# Production
+npx prisma migrate deploy
+npx tsx prisma/seed.ts
+```
+
+### 3. Build and Start
+```bash
+npm install
+npm run dev  # Development
+npm start    # Production
+```
+
+### 4. Port Configuration
+- **Backend**: Express server на port 5000
+- **Bind**: 0.0.0.0:5000 (не localhost)
+
+### 5. Security
+- **CSRF protection**: csurf middleware для POST routes
+- **Session security**: httpOnly cookies, secure (за HTTPS)
+- **Password hashing**: bcrypt з salt rounds 10
+- **SQL injection protection**: Prisma prepared statements
+- **XSS protection**: EJS auto-escaping (використовуйте `<%= %>`, не `<%- %>`)
+
+---
+
+## ✅ Acceptance Criteria
+
+### Функціональність
+- ✅ Користувач може зареєструватися та увійти
+- ✅ ADMIN має повний доступ до всіх функцій
+- ✅ OPERATOR може керувати принтерами, завданнями, логами
+- ✅ VIEWER має read-only доступ
+- ✅ RESTRICTED принтери видимі тільки вибраним групам
+- ✅ Work log оновлює графіки завдань
+- ✅ Task Board показує overdue/today/upcoming завдання
+- ✅ QR сканер працює з камерою та redirect до принтера
+- ✅ Email digest надсилається щодня о 9:00 AM
+- ✅ Flash messages показуються після операцій
+- ✅ Тема dark/light зберігається в localStorage
+- ✅ Мова ua/en зберігається в cookie та працює на всіх сторінках
+
+### UI/UX
+- ✅ Responsive design для mobile/tablet/desktop
+- ✅ Всі інтерактивні елементи мають data-testid
+- ✅ Flash messages автоматично зникають через 5 сек
+- ✅ Status colors: червоний (overdue), помаранчевий (today), зелений (upcoming)
+- ✅ Navigation з theme/language toggles та user dropdown
+- ✅ Empty states з helpful messages
+
+### Безпека
+- ✅ Всі routes з authentication (requireAuth middleware)
+- ✅ Authorization за ролями (requireRole middleware)
+- ✅ CSRF protection на всіх POST routes
+- ✅ Password hashing з bcrypt
+- ✅ Error handling з try-catch блоками (не 500 errors)
+- ✅ Session expiration та secure cookies
+
+### Продуктивність
+- ✅ Database queries оптимізовані (include relations)
+- ✅ PicoCSS через CDN (не bundled)
+- ✅ @zxing/library через CDN esm (не bundled)
+- ✅ Static assets в public/ folder
+
+---
+
+## 📝 Важливі нотатки для імплементації
+
+1. **Error Handling**: Завжди використовуйте try-catch в async route handlers
+2. **Flash Messages**: Включайте `<%- include('../partials/flash-messages') %>` в усі основні pages
+3. **CSRF Token**: Передавайте через data-csrf attribute або hidden input
+4. **i18n**: Використовуйте `<%= __('key') %>` замість hardcoded текстів
+5. **data-testid**: Додавайте до всіх buttons, inputs, links, text elements
+6. **Group Visibility**: Перевіряйте PrinterGroupAccess для RESTRICTED принтерів
+7. **Scheduler Logic**: Різна логіка nextDue для DAYS/PRINT_HOURS/JOB_COUNT
+8. **Priority Validation**: Clamp priority до 1-10 range
+9. **Theme/Language**: Ініціалізуйте з localStorage/cookie при page load
+10. **Session Management**: Зберігайте userId, email, name, role в session
+
+---
+
+## 🎬 Промпт для Replit Agent
+
+```
+Створи веб-застосунок "3D Printer Care" для управління обслуговуванням 3D-принтерів.
+
+Технології:
+- Node.js + Express + TypeScript + EJS templates
+- PostgreSQL (Replit Database) з Prisma ORM
+- PicoCSS для styling
+- express-session + bcrypt для auth
+- i18n (українська та англійська)
+- node-cron для scheduled tasks
+- qrcode + @zxing/library для QR codes
+- nodemailer для email
+
+Основні features:
+1. Аутентифікація (register/login) з 3 ролями: ADMIN, OPERATOR, VIEWER
+2. Управління принтерами (CRUD, visibility: PUBLIC/RESTRICTED, group-based access)
+3. Бібліотека завдань обслуговування з пріоритетами (1-10)
+4. Автоматичні графіки завдань (інтервали: DAYS, PRINT_HOURS, JOB_COUNT)
+5. Журнали робіт з автооновленням графіків
+6. Dashboard з статистикою (Overdue/Today/Upcoming)
+7. Task Board з фільтрацією
+8. QR Scanner з камерою (@zxing/library)
+9. Email digest notifications (щодня о 9:00 AM)
+10. Settings (categories, users, groups) - тільки ADMIN
+11. Flash messages system (success/error/info)
+12. Dark/Light theme toggle з localStorage
+13. Багатомовність (ua/en) з cookie persistence
+14. Responsive design (mobile/tablet/desktop)
+
+База даних (Prisma schema): User, UserGroup, TaskCategory, Printer, PrinterGroupAccess, PrinterEmailRecipient, MaintenanceTask, PrinterTaskSchedule, WorkLog, Notification.
+
+Тестові дані:
+- 4 користувачі (admin/technician/operator/viewer, всі з паролем admin123)
+- 4 групи (Адмін, Технік, Оператор, Користувач)
+- 5 категорій завдань
+- 2 принтери (X1C-002 PUBLIC, A1-001 RESTRICTED)
+- 9 завдань обслуговування з різними пріоритетами
+- Графіки завдань для обох принтерів
+
+Деталі архітектури та повну специфікацію див. у документі вище.
+
+Створи production-ready застосунок з повною функціональністю, error handling, i18n, responsive design та data-testid attributes для testing.
+```
+
+---
+
+Успіхів у створенні застосунку! 🚀
