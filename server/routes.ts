@@ -10,6 +10,7 @@ import schedulesRoutes from "./routes/schedules";
 import groupsRoutes from "./routes/groups";
 import usersRoutes from "./routes/users";
 import smtpRoutes from "./routes/smtp";
+import telegramRoutes from "./routes/telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(authRoutes);
@@ -22,6 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(schedulesRoutes);
   app.use(groupsRoutes);
   app.use(smtpRoutes);
+  app.use(telegramRoutes);
 
   const httpServer = createServer(app);
 
