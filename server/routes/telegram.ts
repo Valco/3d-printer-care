@@ -57,14 +57,14 @@ router.get("/api/telegram/settings", requireAdmin, async (req, res) => {
       return res.json(null);
     }
 
-    // Повертаємо без розшифрованого токену (клієнт не повинен бачити токен)
+    // Повертаємо без токену (клієнт не повинен бачити токен)
     res.json({
       id: settings.id,
-      botToken: settings.botToken, // зашифрований
       chatId: settings.chatId,
       enabled: settings.enabled,
       notifyOverdue: settings.notifyOverdue,
       notifyToday: settings.notifyToday,
+      hasBotToken: !!settings.botToken,
     });
   } catch (error) {
     console.error("Error fetching Telegram settings:", error);
@@ -77,8 +77,8 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
   try {
     const { botToken, chatId, enabled, notifyOverdue, notifyToday } = req.body;
 
-    if (!botToken || !chatId) {
-      return res.status(400).json({ error: "Bot token and chat ID are required" });
+    if (!chatId) {
+      return res.status(400).json({ error: "Chat ID is required" });
     }
 
     // Правильний парсинг boolean значень
@@ -86,8 +86,11 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
     const notifyOverdueFlag = notifyOverdue === true || notifyOverdue === "true";
     const notifyTodayFlag = notifyToday === true || notifyToday === "true";
 
-    // Шифруємо токен
-    const botTokenEncrypted = encrypt(botToken);
+    // Шифруємо токен якщо він наданий
+    let botTokenEncrypted = null;
+    if (botToken && botToken.trim()) {
+      botTokenEncrypted = encrypt(botToken);
+    }
 
     // Перевіряємо чи вже є налаштування
     const existingSettings = await prisma.telegramSettings.findFirst({
@@ -100,7 +103,7 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
       savedSettings = await prisma.telegramSettings.update({
         where: { id: existingSettings.id },
         data: {
-          botToken: botTokenEncrypted,
+          ...(botTokenEncrypted ? { botToken: botTokenEncrypted } : {}),
           chatId,
           enabled: enabledFlag,
           notifyOverdue: notifyOverdueFlag,
@@ -109,9 +112,13 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
       });
     } else {
       // Створюємо нові налаштування
+      if (!botToken || !botToken.trim()) {
+        return res.status(400).json({ error: "Bot token is required for initial setup" });
+      }
+      
       savedSettings = await prisma.telegramSettings.create({
         data: {
-          botToken: botTokenEncrypted,
+          botToken: botTokenEncrypted!,
           chatId,
           enabled: enabledFlag,
           notifyOverdue: notifyOverdueFlag,
@@ -120,14 +127,14 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
       });
     }
 
-    // Повертаємо без розшифрованого токену
+    // Повертаємо без токену
     res.json({
       id: savedSettings.id,
-      botToken: savedSettings.botToken, // зашифрований
       chatId: savedSettings.chatId,
       enabled: savedSettings.enabled,
       notifyOverdue: savedSettings.notifyOverdue,
       notifyToday: savedSettings.notifyToday,
+      hasBotToken: !!savedSettings.botToken,
     });
   } catch (error) {
     console.error("Error saving Telegram settings:", error);

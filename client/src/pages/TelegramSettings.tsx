@@ -15,11 +15,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type TelegramSettings = {
   id: string;
-  botToken: string;
   chatId: string;
   enabled: boolean;
   notifyOverdue: boolean;
   notifyToday: boolean;
+  hasBotToken: boolean;
 };
 
 export default function TelegramSettings() {
@@ -29,17 +29,31 @@ export default function TelegramSettings() {
     queryKey: ["/api/telegram/settings"],
   });
 
+  const formSchema = insertTelegramSettingsSchema.refine(
+    (data) => {
+      // Токен обов'язковий при початковому налаштуванні
+      if (!settings && (!data.botToken || data.botToken.trim() === "")) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Bot token обов'язковий при початковому налаштуванні",
+      path: ["botToken"],
+    }
+  );
+
   const form = useForm<InsertTelegramSettings>({
-    resolver: zodResolver(insertTelegramSettingsSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      botToken: settings?.botToken || "",
+      botToken: "",
       chatId: settings?.chatId || "",
       enabled: settings?.enabled ?? true,
       notifyOverdue: settings?.notifyOverdue ?? true,
       notifyToday: settings?.notifyToday ?? true,
     },
     values: settings ? {
-      botToken: settings.botToken,
+      botToken: "",
       chatId: settings.chatId,
       enabled: settings.enabled,
       notifyOverdue: settings.notifyOverdue,
@@ -57,6 +71,10 @@ export default function TelegramSettings() {
       toast({
         title: "Успішно збережено",
         description: "Telegram налаштування оновлено",
+      });
+      form.reset({
+        ...form.getValues(),
+        botToken: "",
       });
     },
     onError: (error: Error) => {
@@ -119,16 +137,21 @@ export default function TelegramSettings() {
                   name="botToken"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Bot Token</FormLabel>
+                      <FormLabel>Bot Token {settings?.hasBotToken && "(опціонально)"}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz" 
-                          {...field} 
+                          type="password"
+                          placeholder={settings?.hasBotToken ? "Залишити поточний токен" : "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"} 
+                          {...field}
+                          value={field.value || ""}
                           data-testid="input-telegram-bot-token"
                         />
                       </FormControl>
                       <FormDescription>
-                        Токен отриманий від @BotFather
+                        {settings?.hasBotToken 
+                          ? "Залиште порожнім щоб зберегти поточний токен. Введіть новий токен для оновлення."
+                          : "Токен отриманий від @BotFather"
+                        }
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

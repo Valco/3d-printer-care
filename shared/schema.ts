@@ -57,6 +57,8 @@ export const insertTelegramSettingsSchema = createInsertSchema(telegramSettings)
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  botToken: z.string().optional(),
 });
 
 export type InsertTelegramSettings = z.infer<typeof insertTelegramSettingsSchema>;
