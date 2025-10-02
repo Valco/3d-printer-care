@@ -25,7 +25,7 @@ type AppSidebarProps = {
 
 export function AppSidebar({ userRole }: AppSidebarProps) {
   const [location, setLocation] = useLocation();
-  const [settingsOpen, setSettingsOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mainItems = [
     { title: "Панель управління", url: "/", icon: LayoutDashboard },
