@@ -66,6 +66,12 @@ Preferred communication style: Simple, everyday language.
   - Printer settings include task configuration section showing all available tasks with checkboxes
   - Real-time schedule add/remove with state synchronization
   - Task assignment accessible from both Dashboard (PrinterDetailsDialog) and Printers page
+- **SMTP Configuration** (October 2025): Manual SMTP setup for self-hosted deployments
+  - Admin-only settings page at /settings/smtp
+  - Configurable fields: host, port, SSL/TLS, username, from name/email
+  - Password encryption using AES-256-CBC with SESSION_SECRET as encryption key
+  - Password required on initial setup, optional on updates (existing password retained)
+  - Settings stored in SMTPSettings database table
 
 **QR Scanner Implementation** (`/scan` route):
 - Camera-based QR code scanning using @zxing/browser
@@ -95,6 +101,7 @@ Preferred communication style: Simple, everyday language.
 - Work Logs for completed maintenance with **dynamic field storage**
 - Email Recipients for notifications
 - Task Categories for organization
+- SMTP Settings for email notification configuration (self-hosted deployments)
 
 **Dynamic Field System** (Updated October 2025):
 - MaintenanceTask configuration fields:
