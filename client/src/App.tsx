@@ -13,6 +13,7 @@ import Printers from "@/pages/Printers";
 import TaskBoard from "@/pages/TaskBoard";
 import Tasks from "@/pages/Tasks";
 import WorkLogs from "@/pages/WorkLogs";
+import Scan from "@/pages/Scan";
 import Categories from "@/pages/Categories";
 import Groups from "@/pages/Groups";
 import Users from "@/pages/Users";
@@ -73,12 +74,7 @@ function Router() {
                 <Route path="/board" component={TaskBoard} />
                 <Route path="/tasks" component={Tasks} />
                 <Route path="/logs" component={WorkLogs} />
-                <Route path="/scan">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">QR сканер</h1>
-                    <p className="text-muted-foreground">QR сканер незабаром...</p>
-                  </div>
-                </Route>
+                <Route path="/scan" component={Scan} />
                 <Route path="/settings/categories" component={Categories} />
                 <Route path="/settings/groups" component={Groups} />
                 <Route path="/settings/users" component={Users} />
