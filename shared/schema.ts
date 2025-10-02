@@ -41,3 +41,23 @@ export const insertSMTPSettingsSchema = createInsertSchema(smtpSettings).omit({
 
 export type InsertSMTPSettings = z.infer<typeof insertSMTPSettingsSchema>;
 export type SMTPSettings = typeof smtpSettings.$inferSelect;
+
+export const telegramSettings = pgTable("TelegramSettings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botToken: text("botToken").notNull(),
+  chatId: text("chatId").notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  notifyOverdue: boolean("notifyOverdue").notNull().default(true),
+  notifyToday: boolean("notifyToday").notNull().default(true),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export const insertTelegramSettingsSchema = createInsertSchema(telegramSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTelegramSettings = z.infer<typeof insertTelegramSettingsSchema>;
+export type TelegramSettings = typeof telegramSettings.$inferSelect;

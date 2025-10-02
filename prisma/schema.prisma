@@ -148,3 +148,14 @@ model SMTPSettings {
   updatedAt       DateTime @updatedAt
   createdAt       DateTime @default(now())
 }
+
+model TelegramSettings {
+  id                String   @id @default(uuid())
+  botToken          String
+  chatId            String
+  enabled           Boolean  @default(true)
+  notifyOverdue     Boolean  @default(true)
+  notifyToday       Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+}
