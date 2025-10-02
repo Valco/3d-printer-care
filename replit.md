@@ -30,6 +30,11 @@ Preferred communication style: Simple, everyday language.
 - Status-first design with semantic color coding (overdue=red, today=orange, upcoming=green)
 - Information density without sacrificing readability
 - Professional, trust-inspiring interface for critical maintenance tracking
+- **Visual task indicators** (October 2025): Each task displayed as individual colored circle on printer cards
+  - Circular cells (24x24px) with status-based colors: green (upcoming), yellow (today), red (overdue)
+  - Interactive tooltips showing task name and due date on hover
+  - Auto-categorization: tasks automatically move between color categories as due dates change
+  - Ordered display: upcoming → today → overdue (left to right)
 
 ### Backend Architecture
 
