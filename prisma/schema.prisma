@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         String     @default("VIEWER")
+  groupId      String?
+  group        UserGroup? @relation(fields: [groupId], references: [id])
+  createdAt    DateTime   @default(now())
+}
+
+model UserGroup {
+  id            String                @id @default(uuid())
+  name          String                @unique
+  description   String?
+  users         User[]
+  printerAccess PrinterGroupAccess[]
+  createdAt     DateTime              @default(now())
+}
+
+model TaskCategory {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  description String?
+  tasks       MaintenanceTask[]
+  createdAt   DateTime          @default(now())
+}
+
+model Printer {
+  id              String                  @id @default(uuid())
+  name            String
+  model           String?
+  serialNumber    String?
+  location        String?
+  ipAddress       String?
+  notes           String?
+  visibility      String                  @default("PUBLIC")
+  printHours      Int                     @default(0)
+  jobsCount       Int                     @default(0)
+  schedules       PrinterTaskSchedule[]
+  workLogs        WorkLog[]
+  groupAccess     PrinterGroupAccess[]
+  emailRecipients PrinterEmailRecipient[]
+  createdAt       DateTime                @default(now())
+}
+
+model PrinterGroupAccess {
+  id        String    @id @default(uuid())
+  printerId String
+  groupId   String
+  printer   Printer   @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  group     UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([printerId, groupId])
+}
+
+model PrinterEmailRecipient {
+  id        String   @id @default(uuid())
+  printerId String
+  email     String
+  printer   Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([printerId, email])
+}
+
+model MaintenanceTask {
+  id                  String                @id @default(uuid())
+  title               String
+  categoryId          String?
+  category            TaskCategory?         @relation(fields: [categoryId], references: [id])
+  intervalType        String
+  intervalValue       Int
+  defaultInstructions String?
+  priority            Int                   @default(5)
+  schedules           PrinterTaskSchedule[]
+  workLogs            WorkLog[]
+  createdAt           DateTime              @default(now())
+}
+
+model PrinterTaskSchedule {
+  id            String           @id @default(uuid())
+  printerId     String
+  taskId        String
+  printer       Printer          @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  task          MaintenanceTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  lastCompleted DateTime?
+  nextDue       DateTime?
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+
+  @@unique([printerId, taskId])
+}
+
+model WorkLog {
+  id              String           @id @default(uuid())
+  date            DateTime         @default(now())
+  printerId       String
+  taskId          String?
+  printer         Printer          @relation(fields: [printerId], references: [id])
+  task            MaintenanceTask? @relation(fields: [taskId], references: [id])
+  nozzleSize      String?
+  printHoursAtLog Int?
+  jobsCountAtLog  Int?
+  details         String?
+  performedBy     String?
+  createdAt       DateTime         @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  title     String
+  message   String
+  sentAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+}
