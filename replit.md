@@ -100,7 +100,7 @@ Preferred communication style: Simple, everyday language.
 - Prisma for migrations and seeding (`prisma/schema.prisma`, `prisma/seed.ts`)
 
 **Core Data Models**:
-- Users with role-based permissions and group memberships
+- Users with role-based permissions, group memberships, and optional Telegram nicknames for personalized notifications
 - User Groups for access control
 - Printers with visibility settings and usage metrics (print hours, job counts)
 - Maintenance Tasks with categories, priority levels, and **dynamic field configuration**
