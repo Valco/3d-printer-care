@@ -53,8 +53,17 @@ Preferred communication style: Simple, everyday language.
 - Automated task scheduling based on time intervals, print hours, or job counts
 - Work log tracking with printer metrics
 - QR code generation for printer identification
+- QR code scanning with camera for quick access to printer work logs
 - Email digest notifications (nodemailer)
 - Internationalization support (i18n - Ukrainian/English)
+
+**QR Scanner Implementation** (`/scan` route):
+- Camera-based QR code scanning using @zxing/browser
+- Supports both JSON format (`{type: "printer", id: "...", name: "..."}`) and raw printer IDs
+- Duplicate detection to prevent repeated scans of the same printer
+- Comprehensive error handling: permission denied, camera busy, device not found
+- Automatic display of work logs after successful scan
+- Mobile-friendly interface for on-site maintenance teams
 
 ### Database Architecture
 
@@ -86,7 +95,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: bcrypt for password hashing, express-session for session management
 - **Validation**: express-validator, Zod (drizzle-zod) for schema validation
 - **Scheduling**: node-cron for automated task scheduling
-- **QR Codes**: qrcode library for generation, @zxing/library for scanning
+- **QR Codes**: qrcode library for generation, @zxing/browser for camera-based scanning
 - **UI Components**: Radix UI primitives (@radix-ui/react-*)
 - **Styling**: Tailwind CSS with custom Material Design 3 tokens
 - **State Management**: TanStack Query v5
