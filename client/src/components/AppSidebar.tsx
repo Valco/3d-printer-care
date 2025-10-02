@@ -89,13 +89,18 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => setSettingsOpen(!settingsOpen)}
+                    asChild
                     isActive={location.startsWith('/settings')}
-                    data-testid="nav-налаштування"
                   >
-                    <Settings className="h-4 w-4" />
-                    <span>Налаштування</span>
-                    <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+                    <button 
+                      onClick={() => setSettingsOpen(!settingsOpen)}
+                      data-testid="nav-налаштування"
+                      className="w-full"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Налаштування</span>
+                      <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+                    </button>
                   </SidebarMenuButton>
                   {settingsOpen && (
                     <SidebarMenuSub>
