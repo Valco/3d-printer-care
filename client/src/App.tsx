@@ -80,6 +80,7 @@ function Router() {
                 <Route path="/settings/categories" component={Categories} />
                 <Route path="/settings/groups" component={Groups} />
                 <Route path="/settings/users" component={Users} />
+                <Route path="/users" component={Users} />
                 <Route path="/settings/smtp" component={SMTPSettings} />
                 <Route path="/settings/telegram" component={TelegramSettings} />
                 <Route path="/settings" component={Settings} />
