@@ -83,6 +83,43 @@ router.post("/api/worklogs", requireRole("ADMIN", "OPERATOR"), async (req, res) 
       return res.status(404).json({ error: "Printer not found" });
     }
 
+    if (taskId) {
+      const task = await prisma.maintenanceTask.findUnique({
+        where: { id: taskId },
+      });
+
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      if (task.requiresAxis && !axis) {
+        return res.status(400).json({ error: "Axis is required for this task" });
+      }
+
+      if (task.requiresNozzleSize && !nozzleSize) {
+        return res.status(400).json({ error: "Nozzle size is required for this task" });
+      }
+
+      if (task.requiresPlasticType && !plasticType) {
+        return res.status(400).json({ error: "Plastic type is required for this task" });
+      }
+
+      if (task.customFieldLabel && task.customFieldType && !customFieldValue) {
+        return res.status(400).json({ 
+          error: `${task.customFieldLabel} is required for this task` 
+        });
+      }
+
+      if (task.customFieldType === "NUMBER" && customFieldValue) {
+        const numValue = parseFloat(customFieldValue);
+        if (isNaN(numValue)) {
+          return res.status(400).json({ 
+            error: `${task.customFieldLabel} must be a number` 
+          });
+        }
+      }
+    }
+
     const workLog = await prisma.workLog.create({
       data: {
         printerId,
