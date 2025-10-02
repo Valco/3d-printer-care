@@ -63,7 +63,7 @@ export default function PrinterCard({
               data-testid={`badge-overdue-${id}`}
             >
               <AlertCircle className="h-3 w-3 mr-1" />
-              {overdueCount} Overdue
+              {overdueCount} прострочено
             </Badge>
           )}
           {todayCount > 0 && (
@@ -72,7 +72,7 @@ export default function PrinterCard({
               className="bg-warning/20 text-warning border-warning/30"
               data-testid={`badge-today-${id}`}
             >
-              {todayCount} Today
+              {todayCount} сьогодні
             </Badge>
           )}
         </div>
@@ -84,7 +84,7 @@ export default function PrinterCard({
           onClick={() => onViewDetails(id)}
           data-testid={`button-view-details-${id}`}
         >
-          View Details
+          Переглянути деталі
         </Button>
       </CardFooter>
     </Card>

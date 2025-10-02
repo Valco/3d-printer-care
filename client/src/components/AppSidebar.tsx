@@ -23,18 +23,18 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const [location, setLocation] = useLocation();
 
   const mainItems = [
-    { title: "Dashboard", url: "/", icon: LayoutDashboard },
-    { title: "Printers", url: "/printers", icon: Printer },
-    { title: "Tasks", url: "/tasks", icon: ClipboardList },
-    { title: "Task Board", url: "/board", icon: KanbanSquare },
-    { title: "Work Logs", url: "/logs", icon: FileText },
-    { title: "QR Scanner", url: "/scan", icon: QrCode },
+    { title: "Панель управління", url: "/", icon: LayoutDashboard },
+    { title: "Принтери", url: "/printers", icon: Printer },
+    { title: "Завдання", url: "/tasks", icon: ClipboardList },
+    { title: "Дошка завдань", url: "/board", icon: KanbanSquare },
+    { title: "Журнал робіт", url: "/logs", icon: FileText },
+    { title: "QR сканер", url: "/scan", icon: QrCode },
   ];
 
   const settingsItems = [
-    { title: "Categories", url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
-    { title: "User Groups", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
-    { title: "Settings", url: "/settings", icon: Settings, roles: ["ADMIN"] },
+    { title: "Категорії", url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
+    { title: "Групи користувачів", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
+    { title: "Налаштування", url: "/settings", icon: Settings, roles: ["ADMIN"] },
   ];
 
   return (
@@ -45,7 +45,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             <Settings className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold truncate">3D Printer Care</h2>
+            <h2 className="font-semibold truncate">Догляд за 3D принтерами</h2>
             <Badge variant="outline" className="text-xs mt-1">
               {userRole}
             </Badge>
@@ -54,7 +54,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Головне меню</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -77,7 +77,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
 
         {settingsItems.some(item => item.roles.includes(userRole)) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Management</SidebarGroupLabel>
+            <SidebarGroupLabel>Керування</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {settingsItems
@@ -103,7 +103,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Theme</span>
+          <span className="text-sm text-muted-foreground">Тема</span>
           <ThemeToggle />
         </div>
       </SidebarFooter>

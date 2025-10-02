@@ -41,14 +41,14 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="printer">Printer *</Label>
+        <Label htmlFor="printer">Принтер *</Label>
         <Select
           value={formData.printerId}
           onValueChange={(value) => setFormData({ ...formData, printerId: value })}
           required
         >
           <SelectTrigger id="printer" data-testid="select-printer">
-            <SelectValue placeholder="Select printer" />
+            <SelectValue placeholder="Оберіть принтер" />
           </SelectTrigger>
           <SelectContent>
             {printers.map((printer) => (
@@ -61,13 +61,13 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="task">Task (Optional)</Label>
+        <Label htmlFor="task">Завдання (необов'язково)</Label>
         <Select
           value={formData.taskId}
           onValueChange={(value) => setFormData({ ...formData, taskId: value })}
         >
           <SelectTrigger id="task" data-testid="select-task">
-            <SelectValue placeholder="Select task" />
+            <SelectValue placeholder="Оберіть завдання" />
           </SelectTrigger>
           <SelectContent>
             {tasks.map((task) => (
@@ -81,7 +81,7 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="nozzleSize">Nozzle Size</Label>
+          <Label htmlFor="nozzleSize">Розмір сопла</Label>
           <Input
             id="nozzleSize"
             data-testid="input-nozzle-size"
@@ -92,7 +92,7 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="printHours">Print Hours</Label>
+          <Label htmlFor="printHours">Годин друку</Label>
           <Input
             id="printHours"
             type="number"
@@ -105,7 +105,7 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="jobsCount">Jobs Count</Label>
+          <Label htmlFor="jobsCount">Кількість робіт</Label>
           <Input
             id="jobsCount"
             type="number"
@@ -119,34 +119,34 @@ export default function WorkLogForm({ printers, tasks, onSubmit, onCancel }: Wor
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="performedBy">Performed By</Label>
+        <Label htmlFor="performedBy">Виконавець</Label>
         <Input
           id="performedBy"
           data-testid="input-performed-by"
           value={formData.performedBy || ""}
           onChange={(e) => setFormData({ ...formData, performedBy: e.target.value })}
-          placeholder="Your name"
+          placeholder="Ваше ім'я"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="details">Details</Label>
+        <Label htmlFor="details">Деталі</Label>
         <Textarea
           id="details"
           data-testid="textarea-details"
           value={formData.details || ""}
           onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-          placeholder="Maintenance details..."
+          placeholder="Деталі обслуговування..."
           rows={4}
         />
       </div>
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
-          Cancel
+          Скасувати
         </Button>
         <Button type="submit" disabled={!formData.printerId} data-testid="button-submit">
-          Record Work
+          Записати роботу
         </Button>
       </div>
     </form>

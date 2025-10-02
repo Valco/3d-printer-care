@@ -23,8 +23,14 @@ type User = {
 };
 
 function Router() {
-  const { data: user, isLoading, refetch } = useQuery<User>({
+  const { data: user, isLoading, refetch } = useQuery<User | null>({
     queryKey: ["/api/auth/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (res.status === 401) return null;
+      if (!res.ok) throw new Error("Failed to fetch user");
+      return res.json();
+    },
     retry: false,
   });
 
@@ -61,38 +67,38 @@ function Router() {
                 <Route path="/board" component={TaskBoard} />
                 <Route path="/tasks">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Tasks</h1>
-                    <p className="text-muted-foreground">Task management coming soon...</p>
+                    <h1 className="text-3xl font-bold">Завдання</h1>
+                    <p className="text-muted-foreground">Управління завданнями незабаром...</p>
                   </div>
                 </Route>
                 <Route path="/logs">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Work Logs</h1>
-                    <p className="text-muted-foreground">Work logs coming soon...</p>
+                    <h1 className="text-3xl font-bold">Журнал робіт</h1>
+                    <p className="text-muted-foreground">Журнал робіт незабаром...</p>
                   </div>
                 </Route>
                 <Route path="/scan">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">QR Scanner</h1>
-                    <p className="text-muted-foreground">QR scanner coming soon...</p>
+                    <h1 className="text-3xl font-bold">QR сканер</h1>
+                    <p className="text-muted-foreground">QR сканер незабаром...</p>
                   </div>
                 </Route>
                 <Route path="/settings/categories">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Task Categories</h1>
-                    <p className="text-muted-foreground">Categories management coming soon...</p>
+                    <h1 className="text-3xl font-bold">Категорії завдань</h1>
+                    <p className="text-muted-foreground">Управління категоріями незабаром...</p>
                   </div>
                 </Route>
                 <Route path="/settings/groups">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">User Groups</h1>
-                    <p className="text-muted-foreground">User groups management coming soon...</p>
+                    <h1 className="text-3xl font-bold">Групи користувачів</h1>
+                    <p className="text-muted-foreground">Управління групами незабаром...</p>
                   </div>
                 </Route>
                 <Route path="/settings">
                   <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Settings</h1>
-                    <p className="text-muted-foreground">Settings coming soon...</p>
+                    <h1 className="text-3xl font-bold">Налаштування</h1>
+                    <p className="text-muted-foreground">Налаштування незабаром...</p>
                   </div>
                 </Route>
                 <Route component={NotFound} />

@@ -37,32 +37,32 @@ export default function TaskBoard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Task Board</h1>
+      <h1 className="text-3xl font-bold">Дошка завдань</h1>
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         <TaskBoardColumn
-          title="Overdue"
+          title="Прострочені"
           count={boardData?.overdue.length || 0}
           tasks={boardData?.overdue || []}
           variant="overdue"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="Today"
+          title="Сьогодні"
           count={boardData?.today.length || 0}
           tasks={boardData?.today || []}
           variant="today"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="This Week"
+          title="Цього тижня"
           count={boardData?.thisWeek.length || 0}
           tasks={boardData?.thisWeek || []}
           variant="week"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="Upcoming"
+          title="Майбутні"
           count={boardData?.upcoming.length || 0}
           tasks={boardData?.upcoming || []}
           variant="upcoming"

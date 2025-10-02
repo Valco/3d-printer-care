@@ -78,7 +78,7 @@ export default function TaskBoardColumn({ title, count, tasks, variant, onTaskCl
         ))}
         {tasks.length === 0 && (
           <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-            No tasks
+            Немає завдань
           </div>
         )}
       </div>

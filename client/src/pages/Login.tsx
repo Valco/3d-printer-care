@@ -35,7 +35,7 @@ export default function Login({ onLogin }: LoginProps) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Login Failed",
+        title: "Помилка входу",
         description: error.message,
         variant: "destructive",
       });
@@ -56,8 +56,8 @@ export default function Login({ onLogin }: LoginProps) {
               <Settings className="h-7 w-7 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl">3D Printer Care</CardTitle>
-          <CardDescription>Sign in to manage your 3D printer maintenance</CardDescription>
+          <CardTitle className="text-2xl">Догляд за 3D принтерами</CardTitle>
+          <CardDescription>Увійдіть для керування обслуговуванням 3D принтерів</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +74,7 @@ export default function Login({ onLogin }: LoginProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Пароль</Label>
               <Input
                 id="password"
                 type="password"
@@ -87,11 +87,11 @@ export default function Login({ onLogin }: LoginProps) {
             </div>
             <Button type="submit" className="w-full" disabled={loginMutation.isPending} data-testid="button-login">
               {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              Увійти
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            Demo: admin@example.com / admin123
+            Демо: admin@example.com / admin123
           </div>
         </CardContent>
       </Card>

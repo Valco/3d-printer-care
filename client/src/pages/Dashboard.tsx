@@ -30,9 +30,24 @@ type DashboardData = {
   }>;
 };
 
+type Printer = {
+  id: string;
+  name: string;
+};
+
 type TaskData = {
   id: string;
   title: string;
+};
+
+type WorkLogInput = {
+  printerId: string;
+  taskId?: string;
+  nozzleSize?: string;
+  printHours?: number;
+  jobsCount?: number;
+  details?: string;
+  performedBy?: string;
 };
 
 export default function Dashboard() {
@@ -44,29 +59,32 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard"],
   });
 
-  const { data: printers } = useQuery<Array<{ id: string; name: string }>>({
+  const { data: printers, isLoading: printersLoading } = useQuery<Printer[]>({
     queryKey: ["/api/printers"],
-    select: (data) => data.map(p => ({ id: p.id, name: p.name })),
+    select: (data: any[]) => data.map(p => ({ id: p.id, name: p.name })),
   });
 
-  const { data: tasks } = useQuery<TaskData[]>({
+  const { data: tasks, isLoading: tasksLoading } = useQuery<TaskData[]>({
     queryKey: ["/api/tasks"],
   });
 
   const createWorkLog = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/worklogs", { method: "POST", body: JSON.stringify(data) }),
+    mutationFn: async (data: WorkLogInput) => {
+      const res = await apiRequest("POST", "/api/worklogs", data);
+      return res.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/board"] });
       toast({
-        title: "Success",
-        description: "Work log recorded successfully",
+        title: "Успіх",
+        description: "Роботу успішно записано",
       });
       setShowWorkLog(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: "Помилка",
         description: error.message,
         variant: "destructive",
       });
@@ -95,43 +113,43 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">Панель управління</h1>
         <div className="flex gap-2">
           <Button onClick={() => setShowWorkLog(true)} data-testid="button-record-work">
             <Plus className="h-4 w-4 mr-2" />
-            Record Work
+            Записати роботу
           </Button>
           <Button variant="outline" onClick={() => setShowScanner(true)} data-testid="button-scan-qr">
             <QrCode className="h-4 w-4 mr-2" />
-            Scan QR
+            Сканувати QR
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          title="Total Printers" 
+          title="Всього принтерів" 
           value={dashboardData?.stats.totalPrinters || 0} 
           icon={Printer} 
           variant="default" 
           testId="stat-total-printers" 
         />
         <StatCard 
-          title="Overdue Tasks" 
+          title="Прострочені" 
           value={dashboardData?.stats.overdueTasks || 0} 
           icon={AlertCircle} 
           variant="overdue" 
           testId="stat-overdue" 
         />
         <StatCard 
-          title="Today Tasks" 
+          title="Сьогодні" 
           value={dashboardData?.stats.todayTasks || 0} 
           icon={Clock} 
           variant="warning" 
           testId="stat-today" 
         />
         <StatCard 
-          title="Upcoming Tasks" 
+          title="Майбутні" 
           value={dashboardData?.stats.upcomingTasks || 0} 
           icon={TrendingUp} 
           variant="success" 
@@ -140,12 +158,18 @@ export default function Dashboard() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Printers</h2>
+        <h2 className="text-xl font-semibold mb-4">Принтери</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dashboardData?.printers.map((printer) => (
             <PrinterCard
               key={printer.id}
-              {...printer}
+              id={printer.id}
+              name={printer.name}
+              model={printer.model || undefined}
+              location={printer.location || undefined}
+              visibility={printer.visibility as "PUBLIC" | "RESTRICTED"}
+              overdueCount={printer.overdueCount}
+              todayCount={printer.todayCount}
               onViewDetails={(id) => console.log("View details:", id)}
             />
           ))}
@@ -155,14 +179,22 @@ export default function Dashboard() {
       <Dialog open={showWorkLog} onOpenChange={setShowWorkLog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Record Work</DialogTitle>
+            <DialogTitle>Записати виконану роботу</DialogTitle>
           </DialogHeader>
-          <WorkLogForm
-            printers={printers || []}
-            tasks={tasks || []}
-            onSubmit={(data) => createWorkLog.mutate(data)}
-            onCancel={() => setShowWorkLog(false)}
-          />
+          {printersLoading || tasksLoading ? (
+            <div className="space-y-4 py-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          ) : (
+            <WorkLogForm
+              printers={printers || []}
+              tasks={tasks || []}
+              onSubmit={(data) => createWorkLog.mutate(data)}
+              onCancel={() => setShowWorkLog(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
