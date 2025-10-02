@@ -64,6 +64,7 @@ router.get("/api/telegram/settings", requireAdmin, async (req, res) => {
       enabled: settings.enabled,
       notifyOverdue: settings.notifyOverdue,
       notifyToday: settings.notifyToday,
+      reminderTime: settings.reminderTime || "08:00",
       hasBotToken: !!settings.botToken,
     });
   } catch (error) {
@@ -75,7 +76,7 @@ router.get("/api/telegram/settings", requireAdmin, async (req, res) => {
 // Зберегти Telegram налаштування
 router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
   try {
-    const { botToken, chatId, enabled, notifyOverdue, notifyToday } = req.body;
+    const { botToken, chatId, enabled, notifyOverdue, notifyToday, reminderTime } = req.body;
 
     if (!chatId) {
       return res.status(400).json({ error: "Chat ID is required" });
@@ -108,6 +109,7 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
           enabled: enabledFlag,
           notifyOverdue: notifyOverdueFlag,
           notifyToday: notifyTodayFlag,
+          reminderTime: reminderTime || "08:00",
         },
       });
     } else {
@@ -123,6 +125,7 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
           enabled: enabledFlag,
           notifyOverdue: notifyOverdueFlag,
           notifyToday: notifyTodayFlag,
+          reminderTime: reminderTime || "08:00",
         },
       });
     }
@@ -134,6 +137,7 @@ router.post("/api/telegram/settings", requireAdmin, async (req, res) => {
       enabled: savedSettings.enabled,
       notifyOverdue: savedSettings.notifyOverdue,
       notifyToday: savedSettings.notifyToday,
+      reminderTime: savedSettings.reminderTime || "08:00",
       hasBotToken: !!savedSettings.botToken,
     });
   } catch (error) {
