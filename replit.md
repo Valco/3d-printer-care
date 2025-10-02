@@ -72,6 +72,13 @@ Preferred communication style: Simple, everyday language.
   - Password encryption using AES-256-CBC with SESSION_SECRET as encryption key
   - Password required on initial setup, optional on updates (existing password retained)
   - Settings stored in SMTPSettings database table
+- **Telegram Configuration** (October 2025): Telegram bot integration for task reminder notifications
+  - Admin-only settings page at /settings/telegram
+  - Configurable fields: bot token, chat ID, notification preferences (enabled, notify overdue, notify today)
+  - Bot token encryption using AES-256-CBC with SESSION_SECRET as encryption key
+  - Token required on initial setup, optional on updates (existing token retained)
+  - Settings stored in TelegramSettings database table
+  - Supports sending reminders to Telegram chat/group for tasks due today or overdue
 
 **QR Scanner Implementation** (`/scan` route):
 - Camera-based QR code scanning using @zxing/browser
@@ -102,6 +109,7 @@ Preferred communication style: Simple, everyday language.
 - Email Recipients for notifications
 - Task Categories for organization
 - SMTP Settings for email notification configuration (self-hosted deployments)
+- Telegram Settings for task reminder notifications via Telegram bot (self-hosted deployments)
 
 **Dynamic Field System** (Updated October 2025):
 - MaintenanceTask configuration fields:
