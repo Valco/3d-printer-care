@@ -66,19 +66,16 @@ export default function Dashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("Dashboard location changed:", location);
-    const urlParts = location.split('?');
-    if (urlParts.length > 1) {
-      const params = new URLSearchParams(urlParts[1]);
-      const printerId = params.get('addWorkLog');
-      console.log("Found addWorkLog param:", printerId);
-      if (printerId) {
-        setPreselectedPrinterId(printerId);
-        setShowWorkLog(true);
-        navigate('/', { replace: true });
-      }
+    const params = new URLSearchParams(window.location.search);
+    const printerId = params.get('addWorkLog');
+    console.log("Checking for addWorkLog param:", printerId);
+    if (printerId) {
+      console.log("Opening work log for printer:", printerId);
+      setPreselectedPrinterId(printerId);
+      setShowWorkLog(true);
+      window.history.replaceState({}, '', '/');
     }
-  }, [location, navigate]);
+  }, []);
 
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/auth/me"],
