@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 type TaskWithPrinter = {
   id: string;
@@ -42,16 +42,16 @@ export default function StatCard({ title, value, icon: Icon, variant, testId, ta
           </p>
         </div>
         {hasTasksToShow ? (
-          <Popover>
-            <PopoverTrigger asChild>
-              <button 
-                className={`h-8 w-8 opacity-30 hover:opacity-60 transition-opacity ${variantStyles[variant]}`}
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <div 
+                className={`h-8 w-8 opacity-30 hover:opacity-60 transition-opacity cursor-help ${variantStyles[variant]}`}
                 data-testid={`${testId}-icon-trigger`}
               >
                 <Icon className="h-8 w-8" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" data-testid={`${testId}-popover`}>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80" data-testid={`${testId}-hover-card`}>
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">{title}</h4>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -68,8 +68,8 @@ export default function StatCard({ title, value, icon: Icon, variant, testId, ta
                   ))}
                 </div>
               </div>
-            </PopoverContent>
-          </Popover>
+            </HoverCardContent>
+          </HoverCard>
         ) : (
           <Icon className={`h-8 w-8 opacity-30 ${variantStyles[variant]}`} />
         )}
