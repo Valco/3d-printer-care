@@ -31,8 +31,22 @@ export default function SMTPSettings() {
     queryKey: ["/api/smtp/settings"],
   });
 
+  const formSchema = insertSMTPSettingsSchema.refine(
+    (data) => {
+      // Пароль обов'язковий при початковому налаштуванні
+      if (!settings && (!data.password || data.password.trim() === "")) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Пароль обов'язковий при початковому налаштуванні",
+      path: ["password"],
+    }
+  );
+
   const form = useForm<InsertSMTPSettings>({
-    resolver: zodResolver(insertSMTPSettingsSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       host: settings?.host || "",
       port: settings?.port || 587,
@@ -211,17 +225,21 @@ export default function SMTPSettings() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Пароль</FormLabel>
+                      <FormLabel>Пароль {settings && "(опціонально)"}</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder={settings ? "••••••••" : "Введіть пароль"}
+                          placeholder={settings ? "Залишити поточний пароль" : "Введіть пароль"}
                           {...field}
+                          value={field.value || ""}
                           data-testid="input-smtp-password"
                         />
                       </FormControl>
                       <FormDescription>
-                        Пароль абоApp Password для автентифікації
+                        {settings 
+                          ? "Залиште порожнім щоб зберегти поточний пароль. Введіть новий пароль для оновлення."
+                          : "Пароль або App Password для автентифікації"
+                        }
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

@@ -34,8 +34,9 @@ export const insertSMTPSettingsSchema = createInsertSchema(smtpSettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  passwordEncrypted: true,
 }).extend({
-  password: z.string().min(1, "Пароль обов'язковий"),
+  password: z.string().optional(),
 });
 
 export type InsertSMTPSettings = z.infer<typeof insertSMTPSettingsSchema>;

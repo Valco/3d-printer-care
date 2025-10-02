@@ -5,8 +5,12 @@ import crypto from "crypto";
 const router = Router();
 
 // Функції для шифрування/дешифрування паролів
-const ENCRYPTION_KEY = process.env.SESSION_SECRET || "default-encryption-key-change-me";
+const ENCRYPTION_KEY = process.env.SESSION_SECRET;
 const ALGORITHM = "aes-256-cbc";
+
+if (!ENCRYPTION_KEY) {
+  throw new Error("SESSION_SECRET environment variable is required for SMTP password encryption");
+}
 
 function encrypt(text: string): string {
   const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
@@ -78,6 +82,9 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
+    // Правильний парсинг boolean значення
+    const secureFlag = secure === true || secure === "true";
+
     // Шифруємо пароль якщо він наданий
     let passwordEncrypted = null;
     if (password && password.trim()) {
@@ -97,7 +104,7 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
         data: {
           host,
           port: parseInt(port),
-          secure: Boolean(secure),
+          secure: secureFlag,
           username,
           ...(passwordEncrypted ? { passwordEncrypted } : {}),
           fromName,
@@ -114,7 +121,7 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
         data: {
           host,
           port: parseInt(port),
-          secure: Boolean(secure),
+          secure: secureFlag,
           username,
           passwordEncrypted: passwordEncrypted!,
           fromName,
