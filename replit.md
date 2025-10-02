@@ -56,6 +56,11 @@ Preferred communication style: Simple, everyday language.
 - QR code scanning with camera for quick access to printer work logs
 - Email digest notifications (nodemailer)
 - Internationalization support (i18n - Ukrainian/English)
+- **Task assignment management** (October 2025): Flexible printer-task assignment via checkbox interface in printer edit dialogs
+  - Dashboard displays color-coded task indicators: upcoming (green), today (yellow/orange), overdue (red)
+  - Printer settings include task configuration section showing all available tasks with checkboxes
+  - Real-time schedule add/remove with state synchronization
+  - Task assignment accessible from both Dashboard (PrinterDetailsDialog) and Printers page
 
 **QR Scanner Implementation** (`/scan` route):
 - Camera-based QR code scanning using @zxing/browser
