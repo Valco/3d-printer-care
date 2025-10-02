@@ -12,6 +12,7 @@ router.get("/api/users", requireRole("ADMIN"), async (req, res) => {
         id: true,
         name: true,
         email: true,
+        telegramNickname: true,
         role: true,
         groupId: true,
         group: {
@@ -34,7 +35,7 @@ router.get("/api/users", requireRole("ADMIN"), async (req, res) => {
 
 router.post("/api/users", requireRole("ADMIN"), async (req, res) => {
   try {
-    const { name, email, password, role, groupId } = req.body;
+    const { name, email, telegramNickname, password, role, groupId } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: "Name, email and password are required" });
@@ -77,6 +78,7 @@ router.post("/api/users", requireRole("ADMIN"), async (req, res) => {
       data: {
         name,
         email,
+        telegramNickname: telegramNickname || null,
         passwordHash,
         role: role || "VIEWER",
         groupId: groupId || null,
@@ -85,6 +87,7 @@ router.post("/api/users", requireRole("ADMIN"), async (req, res) => {
         id: true,
         name: true,
         email: true,
+        telegramNickname: true,
         role: true,
         groupId: true,
         group: {
@@ -107,7 +110,7 @@ router.post("/api/users", requireRole("ADMIN"), async (req, res) => {
 router.patch("/api/users/:id", requireRole("ADMIN"), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role, groupId } = req.body;
+    const { name, email, telegramNickname, password, role, groupId } = req.body;
 
     const existingUser = await prisma.user.findUnique({
       where: { id },
@@ -151,6 +154,7 @@ router.patch("/api/users/:id", requireRole("ADMIN"), async (req, res) => {
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
+    if (telegramNickname !== undefined) updateData.telegramNickname = telegramNickname || null;
     if (role !== undefined) updateData.role = role;
     if (groupId !== undefined) updateData.groupId = groupId || null;
 
@@ -168,6 +172,7 @@ router.patch("/api/users/:id", requireRole("ADMIN"), async (req, res) => {
         id: true,
         name: true,
         email: true,
+        telegramNickname: true,
         role: true,
         groupId: true,
         group: {
