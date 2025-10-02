@@ -84,6 +84,21 @@ router.get("/api/dashboard", requireAuth, async (req, res) => {
         overdueCount: overdueSchedules.length,
         todayCount: todaySchedules.length,
         upcomingCount: upcomingSchedules.length,
+        overdueTasks: overdueSchedules.map(s => ({
+          id: s.id,
+          taskTitle: s.task.title,
+          nextDue: s.nextDue,
+        })),
+        todayTasks: todaySchedules.map(s => ({
+          id: s.id,
+          taskTitle: s.task.title,
+          nextDue: s.nextDue,
+        })),
+        upcomingTasks: upcomingSchedules.map(s => ({
+          id: s.id,
+          taskTitle: s.task.title,
+          nextDue: s.nextDue,
+        })),
       };
     });
 
