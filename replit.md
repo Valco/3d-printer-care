@@ -73,9 +73,10 @@ Preferred communication style: Simple, everyday language.
   - Task assignment accessible from both Dashboard (PrinterDetailsDialog) and Printers page
 - **SMTP Configuration** (October 2025): Manual SMTP setup for self-hosted deployments
   - Admin-only settings page at /settings/smtp
-  - Configurable fields: host, port, SSL/TLS, username, from name/email
+  - Configurable fields: host, port, SSL/TLS, username, from name/email, reminder time
   - Password encryption using AES-256-CBC with SESSION_SECRET as encryption key
   - Password required on initial setup, optional on updates (existing password retained)
+  - Configurable reminder time: admin can set custom time for daily email reminders (default: 08:00)
   - Settings stored in SMTPSettings database table
 - **Telegram Configuration** (October 2025): Telegram bot integration for task reminder notifications
   - Admin-only settings page at /settings/telegram
@@ -85,7 +86,8 @@ Preferred communication style: Simple, everyday language.
   - Settings stored in TelegramSettings database table
   - Supports sending reminders to Telegram chat/group for tasks due today or overdue
 - **Automated Email Notifications** (October 2025): Daily email reminders for tasks due today
-  - Scheduled via node-cron to run daily at 8:00 AM
+  - Scheduled via node-cron with configurable reminder time (default: 8:00 AM)
+  - Dynamic scheduler updates when admin changes reminder time in SMTP settings
   - Automatically identifies tasks with nextDue falling on current date
   - Sends formatted HTML email with table of tasks (printer, task name, priority)
   - Recipients gathered from PrinterEmailRecipient table (unique emails across all printers)
