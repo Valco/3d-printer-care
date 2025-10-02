@@ -99,7 +99,7 @@ export default function PrinterCard({
               <Tooltip key={task.id}>
                 <TooltipTrigger asChild>
                   <div
-                    className={`w-6 h-6 rounded-full border-2 ${colorClasses[task.status]} cursor-help transition-transform hover:scale-110`}
+                    className={`w-10 h-5 rounded-full border-2 ${colorClasses[task.status]} cursor-help transition-transform hover:scale-110`}
                     data-testid={`task-cell-${task.id}`}
                   />
                 </TooltipTrigger>
