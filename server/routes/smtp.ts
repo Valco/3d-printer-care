@@ -60,6 +60,7 @@ router.get("/api/smtp/settings", requireAdmin, async (req, res) => {
       username: settings.username,
       fromName: settings.fromName,
       fromEmail: settings.fromEmail,
+      reminderTime: settings.reminderTime || "08:00",
     });
   } catch (error) {
     console.error("Error fetching SMTP settings:", error);
@@ -70,7 +71,7 @@ router.get("/api/smtp/settings", requireAdmin, async (req, res) => {
 // Зберегти SMTP налаштування
 router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
   try {
-    const { host, port, secure, username, password, fromName, fromEmail } = req.body;
+    const { host, port, secure, username, password, fromName, fromEmail, reminderTime } = req.body;
 
     if (!host || !port || !username || !fromName || !fromEmail) {
       return res.status(400).json({ error: "All fields except password are required" });
@@ -109,6 +110,7 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
           ...(passwordEncrypted ? { passwordEncrypted } : {}),
           fromName,
           fromEmail,
+          reminderTime: reminderTime || "08:00",
         },
       });
     } else {
@@ -126,6 +128,7 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
           passwordEncrypted: passwordEncrypted!,
           fromName,
           fromEmail,
+          reminderTime: reminderTime || "08:00",
         },
       });
     }
@@ -139,6 +142,7 @@ router.post("/api/smtp/settings", requireAdmin, async (req, res) => {
       username: savedSettings.username,
       fromName: savedSettings.fromName,
       fromEmail: savedSettings.fromEmail,
+      reminderTime: savedSettings.reminderTime || "08:00",
     });
   } catch (error) {
     console.error("Error saving SMTP settings:", error);
