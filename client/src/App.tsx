@@ -11,6 +11,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 import Dashboard from "@/pages/Dashboard";
 import Printers from "@/pages/Printers";
 import TaskBoard from "@/pages/TaskBoard";
+import Tasks from "@/pages/Tasks";
+import WorkLogs from "@/pages/WorkLogs";
+import Categories from "@/pages/Categories";
+import Groups from "@/pages/Groups";
+import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
@@ -65,42 +70,17 @@ function Router() {
                 <Route path="/" component={Dashboard} />
                 <Route path="/printers" component={Printers} />
                 <Route path="/board" component={TaskBoard} />
-                <Route path="/tasks">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Завдання</h1>
-                    <p className="text-muted-foreground">Управління завданнями незабаром...</p>
-                  </div>
-                </Route>
-                <Route path="/logs">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Журнал робіт</h1>
-                    <p className="text-muted-foreground">Журнал робіт незабаром...</p>
-                  </div>
-                </Route>
+                <Route path="/tasks" component={Tasks} />
+                <Route path="/logs" component={WorkLogs} />
                 <Route path="/scan">
                   <div className="space-y-4">
                     <h1 className="text-3xl font-bold">QR сканер</h1>
                     <p className="text-muted-foreground">QR сканер незабаром...</p>
                   </div>
                 </Route>
-                <Route path="/settings/categories">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Категорії завдань</h1>
-                    <p className="text-muted-foreground">Управління категоріями незабаром...</p>
-                  </div>
-                </Route>
-                <Route path="/settings/groups">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Групи користувачів</h1>
-                    <p className="text-muted-foreground">Управління групами незабаром...</p>
-                  </div>
-                </Route>
-                <Route path="/settings">
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">Налаштування</h1>
-                    <p className="text-muted-foreground">Налаштування незабаром...</p>
-                  </div>
-                </Route>
+                <Route path="/settings/categories" component={Categories} />
+                <Route path="/settings/groups" component={Groups} />
+                <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>
             </div>
