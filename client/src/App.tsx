@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -13,13 +13,31 @@ import Printers from "@/pages/Printers";
 import TaskBoard from "@/pages/TaskBoard";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
+import { Loader2 } from "lucide-react";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
 
 function Router() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole] = useState<"ADMIN" | "OPERATOR" | "VIEWER">("ADMIN");
+  const { data: user, isLoading, refetch } = useQuery<User>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+  });
 
-  if (!isLoggedIn) {
-    return <Login onLogin={() => setIsLoggedIn(true)} />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login onLogin={() => refetch()} />;
   }
 
   const style = {
@@ -29,7 +47,7 @@ function Router() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <AppSidebar userRole={userRole} />
+        <AppSidebar userRole={user.role as "ADMIN" | "OPERATOR" | "VIEWER"} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger data-testid="button-sidebar-toggle" />

@@ -1,56 +1,96 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, QrCode, Printer } from "lucide-react";
+import { Plus, QrCode, Printer, Loader2 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import PrinterCard from "@/components/PrinterCard";
 import { AlertCircle, Clock, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import WorkLogForm from "@/components/WorkLogForm";
 import QRScanner from "@/components/QRScanner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+type DashboardData = {
+  stats: {
+    totalPrinters: number;
+    overdueTasks: number;
+    todayTasks: number;
+    upcomingTasks: number;
+  };
+  printers: Array<{
+    id: string;
+    name: string;
+    model: string | null;
+    location: string | null;
+    visibility: string;
+    overdueCount: number;
+    todayCount: number;
+  }>;
+};
+
+type TaskData = {
+  id: string;
+  title: string;
+};
 
 export default function Dashboard() {
   const [showWorkLog, setShowWorkLog] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const { toast } = useToast();
 
-  //todo: remove mock functionality
-  const mockPrinters = [
-    {
-      id: "1",
-      name: "X1C-002",
-      model: "BambuLab X1C",
-      location: "Lab Room 1",
-      visibility: "PUBLIC" as const,
-      overdueCount: 2,
-      todayCount: 1,
-    },
-    {
-      id: "2",
-      name: "A1-001",
-      model: "BambuLab A1",
-      location: "Lab Room 2",
-      visibility: "RESTRICTED" as const,
-      overdueCount: 0,
-      todayCount: 3,
-    },
-    {
-      id: "3",
-      name: "Prusa MK4",
-      model: "Prusa i3 MK4",
-      location: "Workshop",
-      visibility: "PUBLIC" as const,
-      overdueCount: 1,
-      todayCount: 0,
-    },
-  ];
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery<DashboardData>({
+    queryKey: ["/api/dashboard"],
+  });
 
-  const mockFormData = {
-    printers: mockPrinters.map(p => ({ id: p.id, name: p.name })),
-    tasks: [
-      { id: "1", title: "Калібрування столу" },
-      { id: "2", title: "Очищення екструдера" },
-      { id: "3", title: "Змащування осей" },
-    ],
-  };
+  const { data: printers } = useQuery<Array<{ id: string; name: string }>>({
+    queryKey: ["/api/printers"],
+    select: (data) => data.map(p => ({ id: p.id, name: p.name })),
+  });
+
+  const { data: tasks } = useQuery<TaskData[]>({
+    queryKey: ["/api/tasks"],
+  });
+
+  const createWorkLog = useMutation({
+    mutationFn: (data: any) => apiRequest("/api/worklogs", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/board"] });
+      toast({
+        title: "Success",
+        description: "Work log recorded successfully",
+      });
+      setShowWorkLog(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (dashboardLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <Skeleton className="h-10 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -69,16 +109,40 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Printers" value={3} icon={Printer} variant="default" testId="stat-total-printers" />
-        <StatCard title="Overdue Tasks" value={3} icon={AlertCircle} variant="overdue" testId="stat-overdue" />
-        <StatCard title="Today Tasks" value={4} icon={Clock} variant="warning" testId="stat-today" />
-        <StatCard title="Upcoming Tasks" value={12} icon={TrendingUp} variant="success" testId="stat-upcoming" />
+        <StatCard 
+          title="Total Printers" 
+          value={dashboardData?.stats.totalPrinters || 0} 
+          icon={Printer} 
+          variant="default" 
+          testId="stat-total-printers" 
+        />
+        <StatCard 
+          title="Overdue Tasks" 
+          value={dashboardData?.stats.overdueTasks || 0} 
+          icon={AlertCircle} 
+          variant="overdue" 
+          testId="stat-overdue" 
+        />
+        <StatCard 
+          title="Today Tasks" 
+          value={dashboardData?.stats.todayTasks || 0} 
+          icon={Clock} 
+          variant="warning" 
+          testId="stat-today" 
+        />
+        <StatCard 
+          title="Upcoming Tasks" 
+          value={dashboardData?.stats.upcomingTasks || 0} 
+          icon={TrendingUp} 
+          variant="success" 
+          testId="stat-upcoming" 
+        />
       </div>
 
       <div>
         <h2 className="text-xl font-semibold mb-4">Printers</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockPrinters.map((printer) => (
+          {dashboardData?.printers.map((printer) => (
             <PrinterCard
               key={printer.id}
               {...printer}
@@ -94,12 +158,9 @@ export default function Dashboard() {
             <DialogTitle>Record Work</DialogTitle>
           </DialogHeader>
           <WorkLogForm
-            printers={mockFormData.printers}
-            tasks={mockFormData.tasks}
-            onSubmit={(data) => {
-              console.log("Work logged:", data);
-              setShowWorkLog(false);
-            }}
+            printers={printers || []}
+            tasks={tasks || []}
+            onSubmit={(data) => createWorkLog.mutate(data)}
             onCancel={() => setShowWorkLog(false)}
           />
         </DialogContent>
