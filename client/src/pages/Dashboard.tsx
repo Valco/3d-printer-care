@@ -13,12 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 type DashboardData = {
-  stats: {
-    totalPrinters: number;
-    overdueTasks: number;
-    todayTasks: number;
-    upcomingTasks: number;
-  };
+  totalPrinters: number;
+  overdueCount: number;
+  todayCount: number;
+  upcomingCount: number;
   printers: Array<{
     id: string;
     name: string;
@@ -129,28 +127,28 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Всього принтерів" 
-          value={dashboardData?.stats.totalPrinters || 0} 
+          value={dashboardData?.totalPrinters || 0} 
           icon={Printer} 
           variant="default" 
           testId="stat-total-printers" 
         />
         <StatCard 
           title="Прострочені" 
-          value={dashboardData?.stats.overdueTasks || 0} 
+          value={dashboardData?.overdueCount || 0} 
           icon={AlertCircle} 
           variant="overdue" 
           testId="stat-overdue" 
         />
         <StatCard 
           title="Сьогодні" 
-          value={dashboardData?.stats.todayTasks || 0} 
+          value={dashboardData?.todayCount || 0} 
           icon={Clock} 
           variant="warning" 
           testId="stat-today" 
         />
         <StatCard 
           title="Майбутні" 
-          value={dashboardData?.stats.upcomingTasks || 0} 
+          value={dashboardData?.upcomingCount || 0} 
           icon={TrendingUp} 
           variant="success" 
           testId="stat-upcoming" 
