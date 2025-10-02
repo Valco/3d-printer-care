@@ -68,9 +68,7 @@ export default function Dashboard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const printerId = params.get('addWorkLog');
-    console.log("Checking for addWorkLog param:", printerId);
     if (printerId) {
-      console.log("Opening work log for printer:", printerId);
       setPreselectedPrinterId(printerId);
       setShowWorkLog(true);
       window.history.replaceState({}, '', '/');
