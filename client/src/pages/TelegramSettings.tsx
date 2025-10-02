@@ -19,6 +19,7 @@ type TelegramSettings = {
   enabled: boolean;
   notifyOverdue: boolean;
   notifyToday: boolean;
+  reminderTime: string;
   hasBotToken: boolean;
 };
 
@@ -51,6 +52,7 @@ export default function TelegramSettings() {
       enabled: settings?.enabled ?? true,
       notifyOverdue: settings?.notifyOverdue ?? true,
       notifyToday: settings?.notifyToday ?? true,
+      reminderTime: settings?.reminderTime || "08:00",
     },
     values: settings ? {
       botToken: "",
@@ -58,6 +60,7 @@ export default function TelegramSettings() {
       enabled: settings.enabled,
       notifyOverdue: settings.notifyOverdue,
       notifyToday: settings.notifyToday,
+      reminderTime: settings.reminderTime || "08:00",
     } : undefined,
   });
 
@@ -247,6 +250,28 @@ export default function TelegramSettings() {
                           data-testid="switch-telegram-notify-today"
                         />
                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reminderTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Надсилати нагадування в</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="time"
+                          {...field}
+                          value={field.value || "08:00"}
+                          data-testid="input-telegram-reminder-time"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        О котрій годині перевіряти термін виконання завдань і надсилати на Telegram нагадування
+                      </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
