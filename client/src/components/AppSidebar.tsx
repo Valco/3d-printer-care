@@ -1,4 +1,4 @@
-import { Settings, LayoutDashboard, Printer, ClipboardList, KanbanSquare, FileText, QrCode, Users, FolderTree, ChevronDown, Mail } from "lucide-react";
+import { Settings, LayoutDashboard, Printer, ClipboardList, KanbanSquare, FileText, QrCode, Users, FolderTree, ChevronDown, Mail, MessageSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +41,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     { title: "Користувачі", url: "/settings/users", icon: Users, roles: ["ADMIN"] },
     { title: "Групи", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
     { title: "SMTP", url: "/settings/smtp", icon: Mail, roles: ["ADMIN"] },
+    { title: "Telegram", url: "/settings/telegram", icon: MessageSquare, roles: ["ADMIN"] },
   ];
 
   const hasSettingsAccess = settingsSubItems.some(item => item.roles.includes(userRole)) || userRole === "ADMIN";
