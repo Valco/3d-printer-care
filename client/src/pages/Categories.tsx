@@ -34,6 +34,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 type Category = {
   id: string;
@@ -45,17 +46,21 @@ type Category = {
   }>;
 };
 
-const categorySchema = z.object({
-  name: z.string().min(1, "Назва обов'язкова"),
-  description: z.string().optional(),
-});
-
-type CategoryFormData = z.infer<typeof categorySchema>;
+type CategoryFormData = {
+  name: string;
+  description?: string;
+};
 
 export default function Categories() {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { toast } = useToast();
+
+  const categorySchema = z.object({
+    name: z.string().min(1, t('category.nameRequired')),
+    description: z.string().optional(),
+  });
 
   const { data: categories, isLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -80,14 +85,14 @@ export default function Categories() {
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Категорію успішно створено",
+        title: t('common.success'),
+        description: t('category.createSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося створити категорію",
+        title: t('common.error'),
+        description: t('category.createError'),
         variant: "destructive",
       });
     },
@@ -105,14 +110,14 @@ export default function Categories() {
       setEditingCategory(null);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Категорію успішно оновлено",
+        title: t('common.success'),
+        description: t('category.updateSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося оновити категорію",
+        title: t('common.error'),
+        description: t('category.updateError'),
         variant: "destructive",
       });
     },
@@ -127,14 +132,14 @@ export default function Categories() {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       toast({
-        title: "Успіх",
-        description: "Категорію успішно видалено",
+        title: t('common.success'),
+        description: t('category.deleteSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося видалити категорію",
+        title: t('common.error'),
+        description: t('category.deleteError'),
         variant: "destructive",
       });
     },
@@ -159,7 +164,7 @@ export default function Categories() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Ви впевнені, що хочете видалити цю категорію?")) {
+    if (confirm(t('category.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -187,10 +192,10 @@ export default function Categories() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Категорії завдань</h1>
+        <h1 className="text-3xl font-bold">{t('category.categories')}</h1>
         <Button onClick={handleCreate} data-testid="button-add-category">
           <Plus className="h-4 w-4 mr-2" />
-          Додати категорію
+          {t('category.addCategory')}
         </Button>
       </div>
 
@@ -198,17 +203,17 @@ export default function Categories() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Назва</TableHead>
-              <TableHead>Опис</TableHead>
-              <TableHead>Завдань</TableHead>
-              <TableHead className="text-right">Дії</TableHead>
+              <TableHead>{t('category.nameLabel')}</TableHead>
+              <TableHead>{t('category.descriptionLabel')}</TableHead>
+              <TableHead>{t('category.tasks')}</TableHead>
+              <TableHead className="text-right">{t('category.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  Категорії не знайдено
+                  {t('category.noCategories')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -218,7 +223,7 @@ export default function Categories() {
                   <TableCell>{category.description || "-"}</TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
-                      {category.tasks.length} завдань(я)
+                      {category.tasks.length}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -253,12 +258,12 @@ export default function Categories() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingCategory ? "Редагувати категорію" : "Додати категорію"}
+              {editingCategory ? t('category.editCategory') : t('category.addCategory')}
             </DialogTitle>
             <DialogDescription>
               {editingCategory
-                ? "Оновіть інформацію про категорію"
-                : "Створіть нову категорію завдань"}
+                ? t('category.updateInfo')
+                : t('category.createInfo')}
             </DialogDescription>
           </DialogHeader>
 
@@ -269,7 +274,7 @@ export default function Categories() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Назва *</FormLabel>
+                    <FormLabel>{t('category.nameLabel')} *</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-name" />
                     </FormControl>
@@ -283,7 +288,7 @@ export default function Categories() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Опис</FormLabel>
+                    <FormLabel>{t('category.descriptionLabel')}</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={3} data-testid="input-description" />
                     </FormControl>
@@ -299,14 +304,14 @@ export default function Categories() {
                   onClick={() => setIsDialogOpen(false)}
                   data-testid="button-cancel"
                 >
-                  Скасувати
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   data-testid="button-submit"
                 >
-                  {editingCategory ? "Оновити" : "Створити"}
+                  {editingCategory ? t('category.update') : t('category.create')}
                 </Button>
               </DialogFooter>
             </form>
