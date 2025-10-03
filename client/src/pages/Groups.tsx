@@ -34,6 +34,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 type UserGroup = {
   id: string;
@@ -53,17 +54,18 @@ type UserGroup = {
   }>;
 };
 
-const groupSchema = z.object({
-  name: z.string().min(1, "Назва обов'язкова"),
-  description: z.string().optional(),
-});
-
-type GroupFormData = z.infer<typeof groupSchema>;
-
 export default function Groups() {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null);
   const { toast } = useToast();
+
+  const groupSchema = z.object({
+    name: z.string().min(1, t('group.nameRequired')),
+    description: z.string().optional(),
+  });
+
+  type GroupFormData = z.infer<typeof groupSchema>;
 
   const { data: groups, isLoading } = useQuery<UserGroup[]>({
     queryKey: ["/api/groups"],
@@ -87,14 +89,14 @@ export default function Groups() {
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Групу успішно створено",
+        title: t('common.success'),
+        description: t('group.createSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося створити групу",
+        title: t('common.error'),
+        description: t('group.createError'),
         variant: "destructive",
       });
     },
@@ -111,14 +113,14 @@ export default function Groups() {
       setEditingGroup(null);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Групу успішно оновлено",
+        title: t('common.success'),
+        description: t('group.updateSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося оновити групу",
+        title: t('common.error'),
+        description: t('group.updateError'),
         variant: "destructive",
       });
     },
@@ -132,14 +134,14 @@ export default function Groups() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       toast({
-        title: "Успіх",
-        description: "Групу успішно видалено",
+        title: t('common.success'),
+        description: t('group.deleteSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося видалити групу",
+        title: t('common.error'),
+        description: t('group.deleteError'),
         variant: "destructive",
       });
     },
@@ -164,7 +166,7 @@ export default function Groups() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Ви впевнені, що хочете видалити цю групу?")) {
+    if (confirm(t('group.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -192,10 +194,10 @@ export default function Groups() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Групи користувачів</h1>
+        <h1 className="text-3xl font-bold">{t('group.groups')}</h1>
         <Button onClick={handleCreate} data-testid="button-add-group">
           <Plus className="h-4 w-4 mr-2" />
-          Додати групу
+          {t('group.addGroup')}
         </Button>
       </div>
 
@@ -203,18 +205,18 @@ export default function Groups() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Назва</TableHead>
-              <TableHead>Опис</TableHead>
-              <TableHead>Користувачів</TableHead>
-              <TableHead>Доступ до принтерів</TableHead>
-              <TableHead className="text-right">Дії</TableHead>
+              <TableHead>{t('group.nameLabel')}</TableHead>
+              <TableHead>{t('group.descriptionLabel')}</TableHead>
+              <TableHead>{t('group.users')}</TableHead>
+              <TableHead>{t('group.printerAccess')}</TableHead>
+              <TableHead className="text-right">{t('group.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {groups?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Групи не знайдено
+                  {t('group.noGroups')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -264,12 +266,12 @@ export default function Groups() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingGroup ? "Редагувати групу" : "Додати групу"}
+              {editingGroup ? t('group.editGroup') : t('group.addGroup')}
             </DialogTitle>
             <DialogDescription>
               {editingGroup
-                ? "Оновіть інформацію про групу користувачів"
-                : "Створіть нову групу користувачів"}
+                ? t('group.updateInfo')
+                : t('group.createInfo')}
             </DialogDescription>
           </DialogHeader>
 
@@ -280,7 +282,7 @@ export default function Groups() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Назва *</FormLabel>
+                    <FormLabel>{t('group.nameLabel')}</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-name" />
                     </FormControl>
@@ -294,7 +296,7 @@ export default function Groups() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Опис</FormLabel>
+                    <FormLabel>{t('group.descriptionLabel')}</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={3} data-testid="input-description" />
                     </FormControl>
@@ -310,14 +312,14 @@ export default function Groups() {
                   onClick={() => setIsDialogOpen(false)}
                   data-testid="button-cancel"
                 >
-                  Скасувати
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   data-testid="button-submit"
                 >
-                  {editingGroup ? "Оновити" : "Створити"}
+                  {editingGroup ? t('group.update') : t('group.create')}
                 </Button>
               </DialogFooter>
             </form>
