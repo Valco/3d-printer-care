@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, QrCode, Calendar, Settings } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,25 +84,36 @@ type UserGroup = {
   name: string;
 };
 
-const printerSchema = z.object({
-  name: z.string().min(1, "Назва обов'язкова"),
-  model: z.string().optional(),
-  serialNumber: z.string().optional(),
-  location: z.string().optional(),
-  ipAddress: z.string().optional(),
-  notes: z.string().optional(),
-  visibility: z.enum(["PUBLIC", "RESTRICTED"]),
-  groupIds: z.array(z.string()).optional(),
-  emailRecipients: z.string().optional(),
-});
-
-type PrinterFormData = z.infer<typeof printerSchema>;
+type PrinterFormData = {
+  name: string;
+  model?: string;
+  serialNumber?: string;
+  location?: string;
+  ipAddress?: string;
+  notes?: string;
+  visibility: "PUBLIC" | "RESTRICTED";
+  groupIds?: string[];
+  emailRecipients?: string;
+};
 
 export default function Printers() {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPrinter, setEditingPrinter] = useState<Printer | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const printerSchema = z.object({
+    name: z.string().min(1, t('printer.nameRequired')),
+    model: z.string().optional(),
+    serialNumber: z.string().optional(),
+    location: z.string().optional(),
+    ipAddress: z.string().optional(),
+    notes: z.string().optional(),
+    visibility: z.enum(["PUBLIC", "RESTRICTED"]),
+    groupIds: z.array(z.string()).optional(),
+    emailRecipients: z.string().optional(),
+  });
 
   const { data: printers, isLoading } = useQuery<Printer[]>({
     queryKey: ["/api/printers"],
@@ -150,14 +162,14 @@ export default function Printers() {
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Принтер успішно створено",
+        title: t('common.success'),
+        description: t('printer.createSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося створити принтер",
+        title: t('common.error'),
+        description: t('printer.createError'),
         variant: "destructive",
       });
     },
@@ -179,14 +191,14 @@ export default function Printers() {
       setEditingPrinter(null);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Принтер успішно оновлено",
+        title: t('common.success'),
+        description: t('printer.updateSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося оновити принтер",
+        title: t('common.error'),
+        description: t('printer.updateError'),
         variant: "destructive",
       });
     },
@@ -201,14 +213,14 @@ export default function Printers() {
       queryClient.invalidateQueries({ queryKey: ["/api/printers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       toast({
-        title: "Успіх",
-        description: "Принтер успішно видалено",
+        title: t('common.success'),
+        description: t('printer.deleteSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося видалити принтер",
+        title: t('common.error'),
+        description: t('printer.deleteError'),
         variant: "destructive",
       });
     },
@@ -232,13 +244,13 @@ export default function Printers() {
       }
       
       toast({
-        title: "Успіх",
-        description: "Завдання додано до принтера",
+        title: t('common.success'),
+        description: t('printer.taskAddSuccess'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -263,13 +275,13 @@ export default function Printers() {
       }
       
       toast({
-        title: "Успіх",
-        description: "Завдання видалено з принтера",
+        title: t('common.success'),
+        description: t('printer.taskRemoveSuccess'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -322,7 +334,7 @@ export default function Printers() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Ви впевнені, що хочете видалити цей принтер?")) {
+    if (confirm(t('printer.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -337,8 +349,8 @@ export default function Printers() {
       setQrCodeUrl(data.qrCode);
     } catch (error) {
       toast({
-        title: "Помилка",
-        description: "Не вдалося згенерувати QR код",
+        title: t('common.error'),
+        description: t('printer.qrError'),
         variant: "destructive",
       });
     }
@@ -367,10 +379,10 @@ export default function Printers() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Принтери</h1>
+        <h1 className="text-3xl font-bold">{t('nav.printers')}</h1>
         <Button onClick={handleCreate} data-testid="button-add-printer">
           <Plus className="h-4 w-4 mr-2" />
-          Додати принтер
+          {t('printer.addPrinter')}
         </Button>
       </div>
 
@@ -378,21 +390,21 @@ export default function Printers() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Назва</TableHead>
-              <TableHead>Модель</TableHead>
-              <TableHead>Розташування</TableHead>
-              <TableHead>Видимість</TableHead>
-              <TableHead>Годин</TableHead>
-              <TableHead>Робіт</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead className="text-right">Дії</TableHead>
+              <TableHead>{t('printer.name')}</TableHead>
+              <TableHead>{t('printer.model')}</TableHead>
+              <TableHead>{t('printer.location')}</TableHead>
+              <TableHead>{t('printer.visibility')}</TableHead>
+              <TableHead>{t('printer.printHours')}</TableHead>
+              <TableHead>{t('printer.jobsCount')}</TableHead>
+              <TableHead>{t('status.overdue')}</TableHead>
+              <TableHead className="text-right">{t('common.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {printers?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Принтери не знайдено
+                  {t('common.noData')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -403,7 +415,7 @@ export default function Printers() {
                   <TableCell>{printer.location || "-"}</TableCell>
                   <TableCell>
                     <Badge variant={printer.visibility === "PUBLIC" ? "default" : "secondary"}>
-                      {printer.visibility === "PUBLIC" ? "Публічний" : "Обмежений"}
+                      {printer.visibility === "PUBLIC" ? t('printer.public') : t('printer.restricted')}
                     </Badge>
                   </TableCell>
                   <TableCell>{printer.printHours}</TableCell>
@@ -412,12 +424,12 @@ export default function Printers() {
                     <div className="flex gap-2">
                       {printer.overdueCount > 0 && (
                         <Badge variant="destructive" data-testid={`badge-overdue-${printer.id}`}>
-                          Прострочено: {printer.overdueCount}
+                          {t('printer.overdueTasksColumn')}: {printer.overdueCount}
                         </Badge>
                       )}
                       {printer.todayCount > 0 && (
                         <Badge className="bg-orange-500" data-testid={`badge-today-${printer.id}`}>
-                          Сьогодні: {printer.todayCount}
+                          {t('printer.todayTasksColumn')}: {printer.todayCount}
                         </Badge>
                       )}
                     </div>
@@ -461,12 +473,12 @@ export default function Printers() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingPrinter ? "Редагувати принтер" : "Додати принтер"}
+              {editingPrinter ? t('printer.editPrinter') : t('printer.addPrinter')}
             </DialogTitle>
             <DialogDescription>
               {editingPrinter
-                ? "Оновіть інформацію про принтер"
-                : "Створіть новий принтер у системі"}
+                ? t('printer.updateInfo')
+                : t('printer.createInfo')}
             </DialogDescription>
           </DialogHeader>
 
@@ -477,7 +489,7 @@ export default function Printers() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Назва *</FormLabel>
+                    <FormLabel>{t('printer.name')} *</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-name" />
                     </FormControl>
@@ -492,7 +504,7 @@ export default function Printers() {
                   name="model"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Модель</FormLabel>
+                      <FormLabel>{t('printer.model')}</FormLabel>
                       <FormControl>
                         <Input {...field} data-testid="input-model" />
                       </FormControl>
@@ -506,7 +518,7 @@ export default function Printers() {
                   name="serialNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Серійний номер</FormLabel>
+                      <FormLabel>{t('printer.serialNumber')}</FormLabel>
                       <FormControl>
                         <Input {...field} data-testid="input-serial" />
                       </FormControl>
@@ -522,7 +534,7 @@ export default function Printers() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Розташування</FormLabel>
+                      <FormLabel>{t('printer.location')}</FormLabel>
                       <FormControl>
                         <Input {...field} data-testid="input-location" />
                       </FormControl>
@@ -536,7 +548,7 @@ export default function Printers() {
                   name="ipAddress"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>IP адреса</FormLabel>
+                      <FormLabel>{t('printer.ipAddress')}</FormLabel>
                       <FormControl>
                         <Input {...field} data-testid="input-ip" />
                       </FormControl>
@@ -551,7 +563,7 @@ export default function Printers() {
                 name="visibility"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Видимість</FormLabel>
+                    <FormLabel>{t('printer.visibility')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-visibility">
@@ -559,8 +571,8 @@ export default function Printers() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PUBLIC">Публічний</SelectItem>
-                        <SelectItem value="RESTRICTED">Обмежений</SelectItem>
+                        <SelectItem value="PUBLIC">{t('printer.public')}</SelectItem>
+                        <SelectItem value="RESTRICTED">{t('printer.restricted')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -574,7 +586,7 @@ export default function Printers() {
                   name="groupIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Групи доступу</FormLabel>
+                      <FormLabel>{t('printer.groupAccess')}</FormLabel>
                       <div className="space-y-2">
                         {groups.map((group) => (
                           <label key={group.id} className="flex items-center gap-2">
@@ -606,7 +618,7 @@ export default function Printers() {
                 name="emailRecipients"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email отримувачі (через кому)</FormLabel>
+                    <FormLabel>{t('printer.emailRecipients')}</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="email1@example.com, email2@example.com" data-testid="input-emails" />
                     </FormControl>
@@ -620,7 +632,7 @@ export default function Printers() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Нотатки</FormLabel>
+                    <FormLabel>{t('printer.notes')}</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={3} data-testid="input-notes" />
                     </FormControl>
@@ -636,14 +648,14 @@ export default function Printers() {
                   onClick={() => setIsDialogOpen(false)}
                   data-testid="button-cancel"
                 >
-                  Скасувати
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   data-testid="button-submit"
                 >
-                  {editingPrinter ? "Оновити" : "Створити"}
+                  {editingPrinter ? t('printer.update') : t('printer.create')}
                 </Button>
               </DialogFooter>
             </form>
@@ -653,19 +665,19 @@ export default function Printers() {
             <div className="mt-6 pt-6 border-t space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2" data-testid="text-task-settings">
                 <Settings className="h-5 w-5" />
-                Налаштування завдань
+                {t('printer.taskSettings')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Оберіть завдання, які актуальні для цього принтера
+                {t('printer.selectTasksInfo')}
               </p>
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12" data-testid="header-task-checkbox">Активне</TableHead>
-                      <TableHead data-testid="header-task-name">Назва завдання</TableHead>
-                      <TableHead data-testid="header-task-cat">Категорія</TableHead>
-                      <TableHead data-testid="header-task-prio">Пріоритет</TableHead>
+                      <TableHead className="w-12" data-testid="header-task-checkbox">{t('printer.active')}</TableHead>
+                      <TableHead data-testid="header-task-name">{t('task.title')}</TableHead>
+                      <TableHead data-testid="header-task-cat">{t('task.category')}</TableHead>
+                      <TableHead data-testid="header-task-prio">{t('task.priority')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -706,9 +718,9 @@ export default function Printers() {
       <Dialog open={!!qrCodeUrl} onOpenChange={() => setQrCodeUrl(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>QR код принтера</DialogTitle>
+            <DialogTitle>{t('printer.qrCode')}</DialogTitle>
             <DialogDescription>
-              Скануйте цей QR код для швидкого доступу до принтера
+              {t('printer.qrCodeScan')}
             </DialogDescription>
           </DialogHeader>
           {qrCodeUrl && (
