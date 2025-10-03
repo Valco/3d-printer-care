@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
 import { Filter, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -57,6 +58,7 @@ type Printer = {
 };
 
 export default function WorkLogs() {
+  const { t } = useTranslation();
   const [selectedPrinter, setSelectedPrinter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("30");
 
@@ -119,17 +121,17 @@ export default function WorkLogs() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Журнал робіт</h1>
+        <h1 className="text-3xl font-bold">{t('workLog.title')}</h1>
         <Button variant="outline" data-testid="button-export">
           <Download className="h-4 w-4 mr-2" />
-          Експорт
+          {t('workLog.export')}
         </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Всього робіт</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('workLog.totalWorks')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold" data-testid="stat-total">
@@ -140,7 +142,7 @@ export default function WorkLogs() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">За останній тиждень</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('workLog.lastWeek')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold" data-testid="stat-week">
@@ -151,7 +153,7 @@ export default function WorkLogs() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">За останній місяць</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('workLog.lastMonth')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold" data-testid="stat-month">
@@ -169,7 +171,7 @@ export default function WorkLogs() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Всі принтери</SelectItem>
+              <SelectItem value="all">{t('workLog.allPrinters')}</SelectItem>
               {printers?.map((printer) => (
                 <SelectItem key={printer.id} value={printer.id}>
                   {printer.name}
@@ -186,10 +188,10 @@ export default function WorkLogs() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">Останні 7 днів</SelectItem>
-              <SelectItem value="30">Останні 30 днів</SelectItem>
-              <SelectItem value="90">Останні 90 днів</SelectItem>
-              <SelectItem value="all">Весь період</SelectItem>
+              <SelectItem value="7">{t('workLog.last7Days')}</SelectItem>
+              <SelectItem value="30">{t('workLog.last30Days')}</SelectItem>
+              <SelectItem value="90">{t('workLog.last90Days')}</SelectItem>
+              <SelectItem value="all">{t('workLog.allTime')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -199,21 +201,21 @@ export default function WorkLogs() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Дата</TableHead>
-              <TableHead>Принтер</TableHead>
-              <TableHead>Завдання</TableHead>
-              <TableHead>Додаткові параметри</TableHead>
-              <TableHead>Виконав</TableHead>
-              <TableHead>Годин друку</TableHead>
-              <TableHead>Робіт</TableHead>
-              <TableHead>Нотатки</TableHead>
+              <TableHead>{t('workLog.date')}</TableHead>
+              <TableHead>{t('workLog.printer')}</TableHead>
+              <TableHead>{t('workLog.task')}</TableHead>
+              <TableHead>{t('workLog.additionalParams')}</TableHead>
+              <TableHead>{t('workLog.performedBy')}</TableHead>
+              <TableHead>{t('workLog.printHoursAtLog')}</TableHead>
+              <TableHead>{t('workLog.jobs')}</TableHead>
+              <TableHead>{t('workLog.notes')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredLogs?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Записи не знайдено
+                  {t('workLog.noRecords')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -252,22 +254,22 @@ export default function WorkLogs() {
                         <div className="space-y-1 text-sm">
                           {log.axis && (
                             <div>
-                              <span className="text-muted-foreground">Вісь:</span> {log.axis}
+                              <span className="text-muted-foreground">{t('workLog.axisLabel')}</span> {log.axis}
                             </div>
                           )}
                           {log.nozzleSize && (
                             <div>
-                              <span className="text-muted-foreground">Сопло:</span> {log.nozzleSize}
+                              <span className="text-muted-foreground">{t('workLog.nozzleLabel')}</span> {log.nozzleSize}
                             </div>
                           )}
                           {log.plasticType && (
                             <div>
-                              <span className="text-muted-foreground">Пластик:</span> {log.plasticType}
+                              <span className="text-muted-foreground">{t('workLog.plasticLabel')}</span> {log.plasticType}
                             </div>
                           )}
                           {log.customFieldValue && (
                             <div>
-                              <span className="text-muted-foreground">Інше:</span> {log.customFieldValue}
+                              <span className="text-muted-foreground">{t('workLog.otherLabel')}</span> {log.customFieldValue}
                             </div>
                           )}
                         </div>
