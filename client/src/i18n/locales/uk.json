@@ -109,7 +109,20 @@
     "selectTasksInfo": "Оберіть завдання, які актуальні для цього принтера",
     "qrCodeScan": "Скануйте цей QR код для швидкого доступу до принтера",
     "active": "Активне",
-    "taskName": "Назва завдання"
+    "taskName": "Назва завдання",
+    "dueDate": "Термін:",
+    "viewDetails": "Переглянути деталі",
+    "details": "Деталі принтера:",
+    "basicInfo": "Основна інформація",
+    "metrics": "Метрики",
+    "taskStats": "Статистика завдань",
+    "allTasksComplete": "Всі завдання виконані",
+    "activeTasks": "Активні завдання",
+    "noActiveTasks": "Немає активних завдань",
+    "noAvailableTasks": "Немає доступних завдань",
+    "taskAdded": "Завдання додано до принтера",
+    "taskRemoved": "Завдання видалено з принтера",
+    "noDueDate": "Без дати"
   },
   "task": {
     "title": "Назва",
@@ -149,7 +162,8 @@
     "updateInfo": "Оновіть інформацію про завдання обслуговування",
     "createInfo": "Створіть нове завдання обслуговування",
     "update": "Оновити",
-    "create": "Створити"
+    "create": "Створити",
+    "noTasks": "Немає завдань"
   },
   "workLog": {
     "title": "Журнал робіт",
@@ -182,7 +196,21 @@
     "axisLabel": "Вісь:",
     "nozzleLabel": "Сопло:",
     "plasticLabel": "Пластик:",
-    "otherLabel": "Інше:"
+    "otherLabel": "Інше:",
+    "selectPrinter": "Оберіть принтер",
+    "selectTask": "Оберіть завдання",
+    "selectAxis": "Оберіть вісь",
+    "axis": "Ось",
+    "nozzleSize": "Розмір сопла",
+    "plasticType": "Тип пластику",
+    "enterValue": "Введіть",
+    "yourName": "Ваше ім'я",
+    "maintenanceDetails": "Деталі обслуговування...",
+    "recordWork": "Записати роботу",
+    "selectAxisAlert": "Будь ласка, оберіть вісь для цього завдання",
+    "selectNozzleAlert": "Будь ласка, вкажіть розмір сопла",
+    "selectPlasticAlert": "Будь ласка, вкажіть тип пластику",
+    "fillCustomFieldAlert": "Будь ласка, заповніть поле"
   },
   "user": {
     "name": "Ім'я",

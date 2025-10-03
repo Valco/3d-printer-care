@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { uk } from "date-fns/locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 type PrinterDetails = {
   id: string;
@@ -60,6 +61,7 @@ type Task = {
 };
 
 export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDetailsDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   
   const { data: printer, isLoading: printerLoading } = useQuery<PrinterDetails>({
@@ -85,13 +87,13 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
       queryClient.invalidateQueries({ queryKey: ["/api/printers", printerId] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       toast({
-        title: "Успіх",
-        description: "Завдання додано до принтера",
+        title: t('common.success'),
+        description: t('printer.taskAdded'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -107,13 +109,13 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
       queryClient.invalidateQueries({ queryKey: ["/api/printers", printerId] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       toast({
-        title: "Успіх",
-        description: "Завдання видалено з принтера",
+        title: t('common.success'),
+        description: t('printer.taskRemoved'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -154,7 +156,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="dialog-printer-details">
         <DialogHeader>
           <DialogTitle data-testid="text-dialog-title">
-            {printerLoading ? <Skeleton className="h-7 w-64" /> : `Деталі принтера: ${printer?.name}`}
+            {printerLoading ? <Skeleton className="h-7 w-64" /> : `${t('printer.details')} ${printer?.name}`}
           </DialogTitle>
         </DialogHeader>
 
@@ -178,19 +180,19 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2" data-testid="text-basic-info">
                 <Printer className="h-5 w-5" />
-                Основна інформація
+                {t('printer.basicInfo')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground" data-testid="label-name">
-                    Назва
+                    {t('printer.name')}
                   </label>
                   <p className="text-base" data-testid="text-name">{printer.name}</p>
                 </div>
                 {printer.model && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground" data-testid="label-model">
-                      Модель
+                      {t('printer.model')}
                     </label>
                     <p className="text-base" data-testid="text-model">{printer.model}</p>
                   </div>
@@ -198,7 +200,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                 {printer.serialNumber && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground" data-testid="label-serial">
-                      Серійний номер
+                      {t('printer.serialNumber')}
                     </label>
                     <p className="text-base font-mono" data-testid="text-serial">{printer.serialNumber}</p>
                   </div>
@@ -206,7 +208,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                 {printer.location && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground" data-testid="label-location">
-                      Локація
+                      {t('printer.location')}
                     </label>
                     <p className="text-base flex items-center gap-2" data-testid="text-location">
                       <MapPin className="h-4 w-4" />
@@ -217,14 +219,14 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                 {printer.ipAddress && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground" data-testid="label-ip">
-                      IP адреса
+                      {t('printer.ipAddress')}
                     </label>
                     <p className="text-base font-mono" data-testid="text-ip">{printer.ipAddress}</p>
                   </div>
                 )}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground" data-testid="label-visibility">
-                    Видимість
+                    {t('printer.visibility')}
                   </label>
                   <div className="flex items-center gap-2">
                     {printer.visibility === "RESTRICTED" && <Lock className="h-4 w-4" />}
@@ -232,7 +234,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                       variant={printer.visibility === "RESTRICTED" ? "secondary" : "outline"}
                       data-testid="badge-visibility"
                     >
-                      {printer.visibility === "RESTRICTED" ? "Обмежений" : "Публічний"}
+                      {printer.visibility === "RESTRICTED" ? t('printer.restricted') : t('printer.public')}
                     </Badge>
                   </div>
                 </div>
@@ -240,7 +242,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
               {printer.notes && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground" data-testid="label-notes">
-                    Примітки
+                    {t('printer.notes')}
                   </label>
                   <p className="text-base text-muted-foreground" data-testid="text-notes">{printer.notes}</p>
                 </div>
@@ -249,18 +251,18 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold" data-testid="text-metrics">
-                Метрики
+                {t('printer.metrics')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg border">
                   <label className="text-sm font-medium text-muted-foreground" data-testid="label-print-hours">
-                    Годин друку
+                    {t('printer.printHours')}
                   </label>
                   <p className="text-2xl font-bold" data-testid="text-print-hours">{printer.printHours}</p>
                 </div>
                 <div className="p-4 rounded-lg border">
                   <label className="text-sm font-medium text-muted-foreground" data-testid="label-jobs-count">
-                    Кількість робіт
+                    {t('printer.jobsCount')}
                   </label>
                   <p className="text-2xl font-bold" data-testid="text-jobs-count">{printer.jobsCount}</p>
                 </div>
@@ -269,7 +271,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold" data-testid="text-statistics">
-                Статистика завдань
+                {t('printer.taskStats')}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {printer.overdueCount > 0 && (
@@ -279,7 +281,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                     data-testid="badge-stat-overdue"
                   >
                     <AlertCircle className="h-3 w-3 mr-1" />
-                    {printer.overdueCount} прострочено
+                    {printer.overdueCount} {t('status.overdue').toLowerCase()}
                   </Badge>
                 )}
                 {printer.todayCount > 0 && (
@@ -289,12 +291,12 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                     data-testid="badge-stat-today"
                   >
                     <Clock className="h-3 w-3 mr-1" />
-                    {printer.todayCount} сьогодні
+                    {printer.todayCount} {t('status.today').toLowerCase()}
                   </Badge>
                 )}
                 {printer.overdueCount === 0 && printer.todayCount === 0 && (
                   <Badge variant="outline" className="bg-success/20 text-success border-success/30" data-testid="badge-stat-ok">
-                    Всі завдання виконані
+                    {t('printer.allTasksComplete')}
                   </Badge>
                 )}
               </div>
@@ -303,7 +305,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
             {qrData?.qrCode && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold" data-testid="text-qr-code">
-                  QR код
+                  {t('printer.qrCode')}
                 </h3>
                 <div className="flex justify-center p-4 rounded-lg border bg-white">
                   <img src={qrData.qrCode} alt="QR код принтера" className="w-48 h-48" data-testid="img-qr-code" />
@@ -313,7 +315,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
 
             {qrLoading && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">QR код</h3>
+                <h3 className="text-lg font-semibold">{t('printer.qrCode')}</h3>
                 <div className="flex justify-center">
                   <Skeleton className="w-48 h-48" />
                 </div>
@@ -322,18 +324,18 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold" data-testid="text-active-tasks">
-                Активні завдання ({activeTasks.length})
+                {t('printer.activeTasks')} ({activeTasks.length})
               </h3>
               {activeTasks.length > 0 ? (
                 <div className="border rounded-lg">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead data-testid="header-task-title">Завдання</TableHead>
-                        <TableHead data-testid="header-task-category">Категорія</TableHead>
-                        <TableHead data-testid="header-task-priority">Пріоритет</TableHead>
-                        <TableHead data-testid="header-task-next-due">Наступна дата</TableHead>
-                        <TableHead data-testid="header-task-status">Статус</TableHead>
+                        <TableHead data-testid="header-task-title">{t('task.title')}</TableHead>
+                        <TableHead data-testid="header-task-category">{t('task.category')}</TableHead>
+                        <TableHead data-testid="header-task-priority">{t('task.priority')}</TableHead>
+                        <TableHead data-testid="header-task-next-due">{t('dashboard.upcomingTasks')}</TableHead>
+                        <TableHead data-testid="header-task-status">{t('status.active')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -362,7 +364,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                                   className="bg-overdue/20 text-overdue border-overdue/30"
                                   data-testid={`badge-task-overdue-${schedule.id}`}
                                 >
-                                  Прострочено
+                                  {t('status.overdue')}
                                 </Badge>
                               )}
                               {status === "today" && (
@@ -371,7 +373,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                                   className="bg-warning/20 text-warning border-warning/30"
                                   data-testid={`badge-task-today-${schedule.id}`}
                                 >
-                                  Сьогодні
+                                  {t('status.today')}
                                 </Badge>
                               )}
                               {status === "upcoming" && (
@@ -380,12 +382,12 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                                   className="bg-success/20 text-success border-success/30"
                                   data-testid={`badge-task-upcoming-${schedule.id}`}
                                 >
-                                  Майбутнє
+                                  {t('status.upcoming')}
                                 </Badge>
                               )}
                               {!schedule.nextDue && (
                                 <Badge variant="outline" data-testid={`badge-task-no-date-${schedule.id}`}>
-                                  Без дати
+                                  {t('printer.noDueDate')}
                                 </Badge>
                               )}
                             </TableCell>
@@ -397,7 +399,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-8" data-testid="text-no-tasks">
-                  Немає активних завдань
+                  {t('printer.noActiveTasks')}
                 </p>
               )}
             </div>
@@ -405,10 +407,10 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2" data-testid="text-task-settings">
                 <Settings className="h-5 w-5" />
-                Налаштування завдань
+                {t('printer.taskSettings')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Оберіть завдання, які актуальні для цього принтера
+                {t('printer.selectTasksInfo')}
               </p>
               {tasksLoading ? (
                 <div className="space-y-2">
@@ -421,10 +423,10 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12" data-testid="header-task-checkbox">Активне</TableHead>
-                        <TableHead data-testid="header-task-name">Назва завдання</TableHead>
-                        <TableHead data-testid="header-task-cat">Категорія</TableHead>
-                        <TableHead data-testid="header-task-prio">Пріоритет</TableHead>
+                        <TableHead className="w-12" data-testid="header-task-checkbox">{t('printer.active')}</TableHead>
+                        <TableHead data-testid="header-task-name">{t('printer.taskName')}</TableHead>
+                        <TableHead data-testid="header-task-cat">{t('task.category')}</TableHead>
+                        <TableHead data-testid="header-task-prio">{t('task.priority')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -459,7 +461,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-8" data-testid="text-no-all-tasks">
-                  Немає доступних завдань
+                  {t('printer.noAvailableTasks')}
                 </p>
               )}
             </div>

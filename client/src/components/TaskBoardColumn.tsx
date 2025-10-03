@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 type Task = {
   id: string;
@@ -38,6 +39,7 @@ const variantStyles = {
 };
 
 export default function TaskBoardColumn({ title, count, tasks, variant, onTaskClick }: TaskBoardColumnProps) {
+  const { t } = useTranslation();
   const styles = variantStyles[variant];
 
   const formatDateTime = (dateStr: string) => {
@@ -88,7 +90,7 @@ export default function TaskBoardColumn({ title, count, tasks, variant, onTaskCl
         ))}
         {tasks.length === 0 && (
           <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-            Немає завдань
+            {t('task.noTasks')}
           </div>
         )}
       </div>

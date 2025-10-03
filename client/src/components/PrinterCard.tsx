@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { MapPin, Lock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 type TaskItem = {
   id: string;
@@ -41,6 +42,7 @@ export default function PrinterCard({
   upcomingTasks,
   onViewDetails,
 }: PrinterCardProps) {
+  const { t } = useTranslation();
   const hasOverdue = overdueCount > 0;
   
   const allTasks = [
@@ -109,7 +111,7 @@ export default function PrinterCard({
                   <div className="space-y-1">
                     <p className="font-semibold">{task.taskTitle}</p>
                     <p className="text-xs text-muted-foreground">
-                      Термін: {formatDate(task.nextDue)}
+                      {t('printer.dueDate')} {formatDate(task.nextDue)}
                     </p>
                   </div>
                 </TooltipContent>
@@ -125,7 +127,7 @@ export default function PrinterCard({
           onClick={() => onViewDetails(id)}
           data-testid={`button-view-details-${id}`}
         >
-          Переглянути деталі
+          {t('printer.viewDetails')}
         </Button>
       </CardFooter>
     </Card>

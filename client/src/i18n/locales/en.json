@@ -109,7 +109,20 @@
     "selectTasksInfo": "Select tasks that are relevant for this printer",
     "qrCodeScan": "Scan this QR code for quick access to the printer",
     "active": "Active",
-    "taskName": "Task Name"
+    "taskName": "Task Name",
+    "dueDate": "Due:",
+    "viewDetails": "View Details",
+    "details": "Printer Details:",
+    "basicInfo": "Basic Information",
+    "metrics": "Metrics",
+    "taskStats": "Task Statistics",
+    "allTasksComplete": "All tasks complete",
+    "activeTasks": "Active Tasks",
+    "noActiveTasks": "No active tasks",
+    "noAvailableTasks": "No available tasks",
+    "taskAdded": "Task added to printer",
+    "taskRemoved": "Task removed from printer",
+    "noDueDate": "No due date"
   },
   "task": {
     "title": "Title",
@@ -149,7 +162,8 @@
     "updateInfo": "Update maintenance task information",
     "createInfo": "Create a new maintenance task",
     "update": "Update",
-    "create": "Create"
+    "create": "Create",
+    "noTasks": "No tasks"
   },
   "workLog": {
     "title": "Work Logs",
@@ -182,7 +196,21 @@
     "axisLabel": "Axis:",
     "nozzleLabel": "Nozzle:",
     "plasticLabel": "Plastic:",
-    "otherLabel": "Other:"
+    "otherLabel": "Other:",
+    "selectPrinter": "Select printer",
+    "selectTask": "Select task",
+    "selectAxis": "Select axis",
+    "axis": "Axis",
+    "nozzleSize": "Nozzle Size",
+    "plasticType": "Plastic Type",
+    "enterValue": "Enter",
+    "yourName": "Your name",
+    "maintenanceDetails": "Maintenance details...",
+    "recordWork": "Record Work",
+    "selectAxisAlert": "Please select an axis for this task",
+    "selectNozzleAlert": "Please specify nozzle size",
+    "selectPlasticAlert": "Please specify plastic type",
+    "fillCustomFieldAlert": "Please fill in the field"
   },
   "user": {
     "name": "Name",

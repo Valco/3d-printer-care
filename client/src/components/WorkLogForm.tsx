@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 type WorkLogFormProps = {
   printers: Array<{ id: string; name: string }>;
@@ -42,6 +43,7 @@ export type WorkLogData = {
 };
 
 export default function WorkLogForm({ printers, tasks, currentUserName, preselectedPrinterId, onSubmit, onCancel }: WorkLogFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<WorkLogData>({
     printerId: preselectedPrinterId || "",
     performedBy: currentUserName,
@@ -65,22 +67,22 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
     e.preventDefault();
     
     if (selectedTask?.requiresAxis && !formData.axis) {
-      alert("Будь ласка, оберіть вісь для цього завдання");
+      alert(t('workLog.selectAxisAlert'));
       return;
     }
     
     if (selectedTask?.requiresNozzleSize && !formData.nozzleSize) {
-      alert("Будь ласка, вкажіть розмір сопла");
+      alert(t('workLog.selectNozzleAlert'));
       return;
     }
 
     if (selectedTask?.requiresPlasticType && !formData.plasticType) {
-      alert("Будь ласка, вкажіть тип пластику");
+      alert(t('workLog.selectPlasticAlert'));
       return;
     }
 
     if (selectedTask?.customFieldLabel && selectedTask?.customFieldType && !formData.customFieldValue) {
-      alert(`Будь ласка, заповніть поле "${selectedTask.customFieldLabel}"`);
+      alert(`${t('workLog.fillCustomFieldAlert')} "${selectedTask.customFieldLabel}"`);
       return;
     }
     
@@ -90,14 +92,14 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="printer">Принтер *</Label>
+        <Label htmlFor="printer">{t('workLog.printer')} *</Label>
         <Select
           value={formData.printerId}
           onValueChange={(value) => setFormData({ ...formData, printerId: value })}
           required
         >
           <SelectTrigger id="printer" data-testid="select-printer">
-            <SelectValue placeholder="Оберіть принтер" />
+            <SelectValue placeholder={t('workLog.selectPrinter')} />
           </SelectTrigger>
           <SelectContent>
             {printers.map((printer) => (
@@ -110,13 +112,13 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="task">Завдання (необов'язково)</Label>
+        <Label htmlFor="task">{t('workLog.task')} ({t('common.select').toLowerCase()})</Label>
         <Select
           value={formData.taskId}
           onValueChange={(value) => setFormData({ ...formData, taskId: value })}
         >
           <SelectTrigger id="task" data-testid="select-task">
-            <SelectValue placeholder="Оберіть завдання" />
+            <SelectValue placeholder={t('workLog.selectTask')} />
           </SelectTrigger>
           <SelectContent>
             {tasks.map((task) => (
@@ -130,13 +132,13 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
 
       {selectedTask?.requiresAxis && (
         <div className="space-y-2">
-          <Label htmlFor="axis">Ось *</Label>
+          <Label htmlFor="axis">{t('workLog.axis')} *</Label>
           <Select
             value={formData.axis}
             onValueChange={(value) => setFormData({ ...formData, axis: value })}
           >
             <SelectTrigger id="axis" data-testid="select-axis">
-              <SelectValue placeholder="Оберіть вісь" />
+              <SelectValue placeholder={t('workLog.selectAxis')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="X">X</SelectItem>
@@ -149,7 +151,7 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
 
       {selectedTask?.requiresNozzleSize && (
         <div className="space-y-2">
-          <Label htmlFor="nozzleSize">Розмір сопла *</Label>
+          <Label htmlFor="nozzleSize">{t('workLog.nozzleSize')} *</Label>
           <Input
             id="nozzleSize"
             data-testid="input-nozzle-size"
@@ -162,7 +164,7 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
 
       {selectedTask?.requiresPlasticType && (
         <div className="space-y-2">
-          <Label htmlFor="plasticType">Тип пластику *</Label>
+          <Label htmlFor="plasticType">{t('workLog.plasticType')} *</Label>
           <Input
             id="plasticType"
             data-testid="input-plastic-type"
@@ -182,14 +184,14 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
             data-testid="input-custom-field"
             value={formData.customFieldValue || ""}
             onChange={(e) => setFormData({ ...formData, customFieldValue: e.target.value })}
-            placeholder={`Введіть ${selectedTask.customFieldLabel.toLowerCase()}...`}
+            placeholder={`${t('workLog.enterValue')} ${selectedTask.customFieldLabel.toLowerCase()}...`}
           />
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="printHours">Годин друку</Label>
+          <Label htmlFor="printHours">{t('printer.printHours')}</Label>
           <Input
             id="printHours"
             type="number"
@@ -202,7 +204,7 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="jobsCount">Кількість робіт</Label>
+          <Label htmlFor="jobsCount">{t('printer.jobsCount')}</Label>
           <Input
             id="jobsCount"
             type="number"
@@ -216,31 +218,31 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="performedBy">Виконавець</Label>
+        <Label htmlFor="performedBy">{t('workLog.performedBy')}</Label>
         <Input
           id="performedBy"
           data-testid="input-performed-by"
           value={formData.performedBy || ""}
           onChange={(e) => setFormData({ ...formData, performedBy: e.target.value })}
-          placeholder="Ваше ім'я"
+          placeholder={t('workLog.yourName')}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="details">Деталі</Label>
+        <Label htmlFor="details">{t('workLog.details')}</Label>
         <Textarea
           id="details"
           data-testid="textarea-details"
           value={formData.details || ""}
           onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-          placeholder="Деталі обслуговування..."
+          placeholder={t('workLog.maintenanceDetails')}
           rows={4}
         />
       </div>
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
-          Скасувати
+          {t('common.cancel')}
         </Button>
         <Button 
           type="submit" 
@@ -253,7 +255,7 @@ export default function WorkLogForm({ printers, tasks, currentUserName, preselec
           }
           data-testid="button-submit"
         >
-          Записати роботу
+          {t('workLog.recordWork')}
         </Button>
       </div>
     </form>
