@@ -12,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { insertTelegramSettingsSchema, type InsertTelegramSettings } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTranslation } from "react-i18next";
 
 type TelegramSettings = {
   id: string;
@@ -25,6 +26,7 @@ type TelegramSettings = {
 
 export default function TelegramSettings() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const { data: settings, isLoading } = useQuery<TelegramSettings>({
     queryKey: ["/api/telegram/settings"],
@@ -32,14 +34,13 @@ export default function TelegramSettings() {
 
   const formSchema = insertTelegramSettingsSchema.refine(
     (data) => {
-      // Токен обов'язковий при початковому налаштуванні
       if (!settings && (!data.botToken || data.botToken.trim() === "")) {
         return false;
       }
       return true;
     },
     {
-      message: "Bot token обов'язковий при початковому налаштуванні",
+      message: t("telegram.tokenRequired"),
       path: ["botToken"],
     }
   );
@@ -72,8 +73,8 @@ export default function TelegramSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/telegram/settings"] });
       toast({
-        title: "Успішно збережено",
-        description: "Telegram налаштування оновлено",
+        title: t("telegram.saveSuccess"),
+        description: t("nav.telegram"),
       });
       form.reset({
         ...form.getValues(),
@@ -82,8 +83,8 @@ export default function TelegramSettings() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
-        description: error.message || "Не вдалося зберегти налаштування",
+        title: t("common.error"),
+        description: error.message || t("telegram.saveError"),
         variant: "destructive",
       });
     },
@@ -106,30 +107,30 @@ export default function TelegramSettings() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <MessageSquare className="h-8 w-8" />
-        <h1 className="text-3xl font-bold">Telegram налаштування</h1>
+        <h1 className="text-3xl font-bold">{t("telegram.title")}</h1>
       </div>
 
       <div className="max-w-2xl">
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Налаштуйте Telegram бота для відправки нагадувань про завдання з терміном виконання сьогодні або раніше.
+            {t("telegram.description")}
             <a 
               href="https://core.telegram.org/bots#how-do-i-create-a-bot" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 ml-2 text-primary hover:underline"
             >
-              Як створити бота <ExternalLink className="h-3 w-3" />
+              {t("telegram.howToCreate")} <ExternalLink className="h-3 w-3" />
             </a>
           </AlertDescription>
         </Alert>
 
         <Card>
           <CardHeader>
-            <CardTitle>Конфігурація Telegram Bot</CardTitle>
+            <CardTitle>{t("telegram.configuration")}</CardTitle>
             <CardDescription>
-              Створіть бота через @BotFather та отримайте токен і chat ID
+              {t("telegram.configInfo")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -140,11 +141,11 @@ export default function TelegramSettings() {
                   name="botToken"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Bot Token {settings?.hasBotToken && "(опціонально)"}</FormLabel>
+                      <FormLabel>{t("telegram.botTokenLabel")} {settings?.hasBotToken && t("telegram.botTokenOptional")}</FormLabel>
                       <FormControl>
                         <Input 
                           type="password"
-                          placeholder={settings?.hasBotToken ? "Залишити поточний токен" : "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"} 
+                          placeholder={settings?.hasBotToken ? t("telegram.keepToken") : t("telegram.botTokenPlaceholder")} 
                           {...field}
                           value={field.value || ""}
                           data-testid="input-telegram-bot-token"
@@ -152,8 +153,8 @@ export default function TelegramSettings() {
                       </FormControl>
                       <FormDescription>
                         {settings?.hasBotToken 
-                          ? "Залиште порожнім щоб зберегти поточний токен. Введіть новий токен для оновлення."
-                          : "Токен отриманий від @BotFather"
+                          ? t("telegram.botTokenUpdateInfo")
+                          : t("telegram.botTokenInfo")
                         }
                       </FormDescription>
                       <FormMessage />
@@ -166,7 +167,7 @@ export default function TelegramSettings() {
                   name="chatId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Chat ID</FormLabel>
+                      <FormLabel>{t("telegram.chatIdLabel")}</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="-1001234567890 або 123456789" 
@@ -175,7 +176,7 @@ export default function TelegramSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        ID чату або групи куди надсилати повідомлення. Використайте @userinfobot для отримання.
+                        {t("telegram.chatIdInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -189,10 +190,10 @@ export default function TelegramSettings() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Увімкнути сповіщення
+                          {t("telegram.enableLabel")}
                         </FormLabel>
                         <FormDescription>
-                          Активувати Telegram нагадування
+                          {t("telegram.enableInfo")}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -213,10 +214,10 @@ export default function TelegramSettings() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Сповіщення про прострочені завдання
+                          {t("telegram.notifyOverdueLabel")}
                         </FormLabel>
                         <FormDescription>
-                          Надсилати нагадування про завдання з терміном раніше сьогодні
+                          {t("telegram.notifyOverdueInfo")}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -237,10 +238,10 @@ export default function TelegramSettings() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Сповіщення про сьогоднішні завдання
+                          {t("telegram.notifyTodayLabel")}
                         </FormLabel>
                         <FormDescription>
-                          Надсилати нагадування про завдання з терміном сьогодні
+                          {t("telegram.notifyTodayInfo")}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -259,7 +260,7 @@ export default function TelegramSettings() {
                   name="reminderTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Надсилати нагадування в</FormLabel>
+                      <FormLabel>{t("telegram.reminderTimeLabel")}</FormLabel>
                       <FormControl>
                         <Input 
                           type="time"
@@ -269,7 +270,7 @@ export default function TelegramSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        О котрій годині перевіряти термін виконання завдань і надсилати на Telegram нагадування
+                        {t("telegram.reminderTimeInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -282,7 +283,7 @@ export default function TelegramSettings() {
                   data-testid="button-save-telegram"
                 >
                   <Save className="mr-2 h-4 w-4" />
-                  {saveMutation.isPending ? "Збереження..." : "Зберегти налаштування"}
+                  {saveMutation.isPending ? t("telegram.saving") : t("smtp.saveSettings")}
                 </Button>
               </form>
             </Form>
