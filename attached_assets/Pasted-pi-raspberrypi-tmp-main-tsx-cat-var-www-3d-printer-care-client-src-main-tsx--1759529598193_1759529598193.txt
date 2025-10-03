@@ -1,0 +1,61 @@
+pi@raspberrypi:/tmp$ # Прочитати main.tsx
+cat /var/www/3d-printer-care/client/src/main.tsx
+
+# Прочитати App.tsx (перші 50 рядків)
+head -50 /var/www/3d-printer-care/client/src/App.tsx
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+createRoot(document.getElementById("root")!).render(<App />);
+import { useState, useEffect } from "react";
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import ThemeToggle from "@/components/ThemeToggle";
+import Dashboard from "@/pages/Dashboard";
+import Printers from "@/pages/Printers";
+import TaskBoard from "@/pages/TaskBoard";
+import Tasks from "@/pages/Tasks";
+import WorkLogs from "@/pages/WorkLogs";
+import Scan from "@/pages/Scan";
+import Categories from "@/pages/Categories";
+import Groups from "@/pages/Groups";
+import Users from "@/pages/Users";
+import Settings from "@/pages/Settings";
+import SMTPSettings from "@/pages/SMTPSettings";
+import TelegramSettings from "@/pages/TelegramSettings";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/not-found";
+import { Loader2 } from "lucide-react";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+function Router() {
+  const { data: user, isLoading, refetch } = useQuery<User | null>({
+    queryKey: ["/api/auth/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (res.status === 401) return null;
+      if (!res.ok) throw new Error("Failed to fetch user");
+      return res.json();
+    },
+    retry: false,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+pi@raspberrypi:/tmp$ 
