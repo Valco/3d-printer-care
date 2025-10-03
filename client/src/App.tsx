@@ -8,6 +8,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
+import "./i18n/config";
 import Dashboard from "@/pages/Dashboard";
 import Printers from "@/pages/Printers";
 import TaskBoard from "@/pages/TaskBoard";
@@ -66,7 +68,10 @@ function Router() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-y-auto p-6">
             <div className="max-w-7xl mx-auto">
