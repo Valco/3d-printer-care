@@ -13,6 +13,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { insertSMTPSettingsSchema, type InsertSMTPSettings } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTranslation } from "react-i18next";
 
 type SMTPSettings = {
   id: string;
@@ -27,6 +28,7 @@ type SMTPSettings = {
 
 export default function SMTPSettings() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const { data: settings, isLoading } = useQuery<SMTPSettings>({
     queryKey: ["/api/smtp/settings"],
@@ -34,14 +36,13 @@ export default function SMTPSettings() {
 
   const formSchema = insertSMTPSettingsSchema.refine(
     (data) => {
-      // Пароль обов'язковий при початковому налаштуванні
       if (!settings && (!data.password || data.password.trim() === "")) {
         return false;
       }
       return true;
     },
     {
-      message: "Пароль обов'язковий при початковому налаштуванні",
+      message: t("smtp.passwordRequired"),
       path: ["password"],
     }
   );
@@ -78,8 +79,8 @@ export default function SMTPSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/smtp/settings"] });
       toast({
-        title: "Успішно збережено",
-        description: "SMTP налаштування оновлено",
+        title: t("smtp.saveSuccess"),
+        description: t("smtp.title"),
       });
       form.reset({
         ...form.getValues(),
@@ -88,8 +89,8 @@ export default function SMTPSettings() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
-        description: error.message || "Не вдалося зберегти налаштування",
+        title: t("common.error"),
+        description: error.message || t("smtp.saveError"),
         variant: "destructive",
       });
     },
@@ -112,23 +113,22 @@ export default function SMTPSettings() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Mail className="h-8 w-8" />
-        <h1 className="text-3xl font-bold">SMTP налаштування</h1>
+        <h1 className="text-3xl font-bold">{t("smtp.title")}</h1>
       </div>
 
       <div className="max-w-2xl">
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Налаштуйте SMTP сервер для відправки email-нагадувань про техобслуговування. 
-            Ці налаштування використовуються при розміщенні на власному сервері.
+            {t("smtp.description")}
           </AlertDescription>
         </Alert>
 
         <Card>
           <CardHeader>
-            <CardTitle>Конфігурація SMTP</CardTitle>
+            <CardTitle>{t("smtp.configuration")}</CardTitle>
             <CardDescription>
-              Введіть дані вашого SMTP провайдера (Gmail, SendGrid, Mailgun тощо)
+              {t("smtp.providerInfo")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -148,7 +148,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Адреса SMTP сервера
+                        {t("smtp.hostLabel")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -171,7 +171,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Порт сервера (зазвичай 587 для TLS або 465 для SSL)
+                        {t("smtp.portLabel")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -185,10 +185,10 @@ export default function SMTPSettings() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Використовувати SSL/TLS
+                          {t("smtp.secureLabel")}
                         </FormLabel>
                         <FormDescription>
-                          Увімкніть для безпечного з'єднання (рекомендовано)
+                          {t("smtp.secureInfo")}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -207,7 +207,7 @@ export default function SMTPSettings() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ім'я користувача / Email</FormLabel>
+                      <FormLabel>{t("smtp.usernameLabel")}</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="your-email@gmail.com" 
@@ -216,7 +216,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Логін для автентифікації на SMTP сервері
+                        {t("smtp.usernameInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -228,11 +228,11 @@ export default function SMTPSettings() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Пароль {settings && "(опціонально)"}</FormLabel>
+                      <FormLabel>{t("smtp.passwordLabel")} {settings && t("smtp.passwordOptional")}</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder={settings ? "Залишити поточний пароль" : "Введіть пароль"}
+                          placeholder={settings ? t("smtp.keepPassword") : t("smtp.passwordPlaceholder")}
                           {...field}
                           value={field.value || ""}
                           data-testid="input-smtp-password"
@@ -240,8 +240,8 @@ export default function SMTPSettings() {
                       </FormControl>
                       <FormDescription>
                         {settings 
-                          ? "Залиште порожнім щоб зберегти поточний пароль. Введіть новий пароль для оновлення."
-                          : "Пароль або App Password для автентифікації"
+                          ? t("smtp.passwordUpdateInfo")
+                          : t("smtp.passwordInfo")
                         }
                       </FormDescription>
                       <FormMessage />
@@ -254,7 +254,7 @@ export default function SMTPSettings() {
                   name="fromName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ім'я відправника</FormLabel>
+                      <FormLabel>{t("smtp.fromNameLabel")}</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="3D Printer Care System" 
@@ -263,7 +263,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Ім'я, яке буде відображатися у відправника
+                        {t("smtp.fromNameInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -275,7 +275,7 @@ export default function SMTPSettings() {
                   name="fromEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email відправника</FormLabel>
+                      <FormLabel>{t("smtp.fromEmail")}</FormLabel>
                       <FormControl>
                         <Input 
                           type="email"
@@ -285,7 +285,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Email адреса, з якої надсилатимуться листи
+                        {t("smtp.fromEmailInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -297,7 +297,7 @@ export default function SMTPSettings() {
                   name="reminderTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Надсилати нагадування в</FormLabel>
+                      <FormLabel>{t("smtp.reminderTimeLabel")}</FormLabel>
                       <FormControl>
                         <Input 
                           type="time"
@@ -307,7 +307,7 @@ export default function SMTPSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        О котрій годині перевіряти термін виконання завдань і надсилати на емайл нагадування
+                        {t("smtp.reminderTimeInfo")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -320,7 +320,7 @@ export default function SMTPSettings() {
                   data-testid="button-save-smtp"
                 >
                   <Save className="mr-2 h-4 w-4" />
-                  {saveMutation.isPending ? "Збереження..." : "Зберегти налаштування"}
+                  {saveMutation.isPending ? t("smtp.saving") : t("smtp.saveSettings")}
                 </Button>
               </form>
             </Form>
