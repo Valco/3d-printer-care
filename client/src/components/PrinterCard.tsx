@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, Lock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { uk } from "date-fns/locale";
+import { getDateLocale } from "@/lib/date-locale";
 import { useTranslation } from "react-i18next";
 
 type TaskItem = {
@@ -42,7 +42,7 @@ export default function PrinterCard({
   upcomingTasks,
   onViewDetails,
 }: PrinterCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const hasOverdue = overdueCount > 0;
   
   const allTasks = [
@@ -54,7 +54,7 @@ export default function PrinterCard({
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—';
     try {
-      return format(new Date(dateStr), 'd MMM yyyy', { locale: uk });
+      return format(new Date(dateStr), 'd MMM yyyy', { locale: getDateLocale(i18n.language) });
     } catch {
       return '—';
     }

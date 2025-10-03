@@ -65,7 +65,15 @@ Preferred communication style: Simple, everyday language.
 - QR code generation for printer identification
 - QR code scanning with camera for quick access to printer work logs
 - Email digest notifications (nodemailer)
-- Internationalization support (i18n - Ukrainian/English)
+- **Complete Internationalization** (October 2025): Full bilingual interface with Ukrainian and English
+  - React-i18next integration for real-time language switching
+  - Ukrainian as primary language, English as alternative
+  - LanguageToggle component in header for instant language switching
+  - Dynamic date-fns locale (getDateLocale helper) - dates format correctly in both languages
+  - Translation coverage: All 13 pages (Dashboard, Printers, Tasks, TaskBoard, WorkLogs, Users, Groups, Categories, Scan, SMTPSettings, TelegramSettings, Settings, Login) and 4 major components (PrinterCard, WorkLogForm, TaskBoardColumn, PrinterDetailsDialog)
+  - Translation files organized by feature domain (common, nav, dashboard, printer, task, workLog, user, group, category, smtp, telegram, qrScanner, settings, status, messages)
+  - All UI elements translated: navigation, forms, validation messages, toasts, placeholders, buttons, labels
+  - Language preference persists across page navigation
 - **Task assignment management** (October 2025): Flexible printer-task assignment via checkbox interface in printer edit dialogs
   - Dashboard displays color-coded task indicators: upcoming (green), today (yellow/orange), overdue (red)
   - Printer settings include task configuration section showing all available tasks with checkboxes

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 type User = {
   id: string;
@@ -18,6 +19,7 @@ type User = {
 };
 
 export default function Settings() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -39,7 +41,7 @@ export default function Settings() {
   });
 
   const handleLogout = () => {
-    if (confirm("Ви впевнені, що хочете вийти?")) {
+    if (confirm(t("settings.logoutConfirm"))) {
       logoutMutation.mutate();
     }
   };
@@ -47,8 +49,8 @@ export default function Settings() {
   const handleChangePassword = async () => {
     if (!newPassword || !confirmPassword) {
       toast({
-        title: "Помилка",
-        description: "Заповніть всі поля",
+        title: t("common.error"),
+        description: t("settings.fillAllFields"),
         variant: "destructive",
       });
       return;
@@ -56,8 +58,8 @@ export default function Settings() {
 
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Помилка",
-        description: "Нові паролі не співпадають",
+        title: t("common.error"),
+        description: t("settings.passwordsDontMatch"),
         variant: "destructive",
       });
       return;
@@ -65,16 +67,16 @@ export default function Settings() {
 
     if (newPassword.length < 6) {
       toast({
-        title: "Помилка",
-        description: "Пароль має містити щонайменше 6 символів",
+        title: t("common.error"),
+        description: t("settings.passwordTooShort"),
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Інформація",
-      description: "Зміна паролю наразі не реалізована",
+      title: t("common.success"),
+      description: t("settings.passwordChangeNotImplemented"),
     });
   };
 
@@ -87,39 +89,44 @@ export default function Settings() {
     );
   }
 
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return t("settings.roleAdmin");
+      case "OPERATOR":
+        return t("settings.roleOperator");
+      default:
+        return t("settings.roleViewer");
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Налаштування</h1>
+      <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
 
       <div className="grid gap-6 max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>Профіль користувача</CardTitle>
+            <CardTitle>{t("settings.userProfile")}</CardTitle>
             <CardDescription>
-              Інформація про ваш акаунт
+              {t("settings.userProfileInfo")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Ім'я</Label>
+              <Label>{t("settings.nameLabel")}</Label>
               <Input value={user?.name || ""} disabled data-testid="input-name" />
             </div>
 
             <div>
-              <Label>Email</Label>
+              <Label>{t("user.email")}</Label>
               <Input value={user?.email || ""} disabled data-testid="input-email" />
             </div>
 
             <div>
-              <Label>Роль</Label>
+              <Label>{t("settings.roleLabel")}</Label>
               <Input
-                value={
-                  user?.role === "ADMIN"
-                    ? "Адміністратор"
-                    : user?.role === "OPERATOR"
-                    ? "Оператор"
-                    : "Переглядач"
-                }
+                value={getRoleLabel(user?.role || "")}
                 disabled
                 data-testid="input-role"
               />
@@ -129,14 +136,14 @@ export default function Settings() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Зміна паролю</CardTitle>
+            <CardTitle>{t("settings.changePassword")}</CardTitle>
             <CardDescription>
-              Оновіть ваш пароль для входу
+              {t("settings.changePasswordInfo")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Старий пароль</Label>
+              <Label>{t("settings.oldPassword")}</Label>
               <Input
                 type="password"
                 value={oldPassword}
@@ -146,7 +153,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <Label>Новий пароль</Label>
+              <Label>{t("settings.newPassword")}</Label>
               <Input
                 type="password"
                 value={newPassword}
@@ -156,7 +163,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <Label>Підтвердити новий пароль</Label>
+              <Label>{t("settings.confirmNewPassword")}</Label>
               <Input
                 type="password"
                 value={confirmPassword}
@@ -166,16 +173,16 @@ export default function Settings() {
             </div>
 
             <Button onClick={handleChangePassword} data-testid="button-change-password">
-              Змінити пароль
+              {t("settings.changePasswordButton")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Сесія</CardTitle>
+            <CardTitle>{t("settings.session")}</CardTitle>
             <CardDescription>
-              Управління вашою сесією
+              {t("settings.sessionInfo")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -186,7 +193,7 @@ export default function Settings() {
               data-testid="button-logout"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Вийти з системи
+              {t("settings.logoutButton")}
             </Button>
           </CardContent>
         </Card>

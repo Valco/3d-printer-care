@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { MapPin, Lock, AlertCircle, Clock, Printer, Settings } from "lucide-react";
 import { format } from "date-fns";
-import { uk } from "date-fns/locale";
+import { getDateLocale } from "@/lib/date-locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -61,7 +61,7 @@ type Task = {
 };
 
 export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDetailsDialogProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   
   const { data: printer, isLoading: printerLoading } = useQuery<PrinterDetails>({
@@ -354,7 +354,7 @@ export default function PrinterDetailsDialog({ printerId, onClose }: PrinterDeta
                             </TableCell>
                             <TableCell data-testid={`cell-task-next-due-${schedule.id}`}>
                               {schedule.nextDue
-                                ? format(new Date(schedule.nextDue), "dd MMM yyyy", { locale: uk })
+                                ? format(new Date(schedule.nextDue), "dd MMM yyyy", { locale: getDateLocale(i18n.language) })
                                 : "—"}
                             </TableCell>
                             <TableCell data-testid={`cell-task-status-${schedule.id}`}>

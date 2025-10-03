@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { uk } from "date-fns/locale";
+import { getDateLocale } from "@/lib/date-locale";
 import { Filter, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -58,7 +58,7 @@ type Printer = {
 };
 
 export default function WorkLogs() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedPrinter, setSelectedPrinter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("30");
 
@@ -225,7 +225,7 @@ export default function WorkLogs() {
                 return (
                   <TableRow key={log.id} data-testid={`row-log-${log.id}`}>
                     <TableCell>
-                      {format(new Date(log.date), "dd MMM yyyy, HH:mm", { locale: uk })}
+                      {format(new Date(log.date), "dd MMM yyyy, HH:mm", { locale: getDateLocale(i18n.language) })}
                     </TableCell>
                     <TableCell className="font-medium">
                       <div>
