@@ -1,0 +1,191 @@
+pi@raspberrypi:/tmp$ cd /var/www/3d-printer-care
+
+# Видалити старі файли i18n якщо є
+rm -rf client/src/i18n client/src/lib/date-locale.ts client/src/components/LanguageToggle.tsx
+
+# Завантажити свіжу версію з GitHub
+cd /tmp
+rm -rf 3d-printer-localisation
+git clone -b feature/Localisation https://github.com/Valco/3d-printer-care.git 3d-printer-fresh
+
+# Скопіювати всі файли крім node_modules, dist
+rsync -av --exclude='node_modules' --exclude='dist' --exclude='.git' --exclude='logs' /tmp/3d-printer-fresh/ /var/www/3d-printer-care/
+Cloning into '3d-printer-fresh'...
+remote: Enumerating objects: 680, done.
+remote: Counting objects: 100% (680/680), done.
+remote: Compressing objects: 100% (230/230), done.
+remote: Total 680 (delta 446), reused 673 (delta 439), pack-reused 0 (from 0)
+Receiving objects: 100% (680/680), 768.89 KiB | 2.67 MiB/s, done.
+Resolving deltas: 100% (446/446), done.
+sending incremental file list
+./
+.gitignore
+.replit
+INSTALL.md
+README.md
+a1-001-card.png
+after_load.png
+collapsed-sidebar.png
+components.json
+dashboard-final.png
+dashboard-printers.png
+database_backup.sql
+design_guidelines.md
+drizzle.config.ts
+expanded-sidebar-attempt.png
+expanded-sidebar-final.png
+package-lock.json
+package.json
+postcss.config.js
+printer-A1-001-card.png
+printer_A1-001.png
+replit.md
+settings-button.png
+settings-expanded.png
+sidebar.png
+tailwind.config.ts
+task-board.png
+tsconfig.json
+vite.config.ts
+attached_assets/
+attached_assets/Pasted--3D-Printer-Care-Replit--1759413392242_1759413392243.txt
+attached_assets/Знімок екрана 2025-10-02 о 23.35.57_1759437361263.png
+attached_assets/Знімок екрана 2025-10-03 о 00.16.51_1759440611824.png
+attached_assets/Знімок екрана 2025-10-03 о 00.16.51_1759441133728.png
+attached_assets/Знімок екрана 2025-10-03 о 00.19.47_1759439990199.png
+client/
+client/index.html
+client/src/
+client/src/App.tsx
+client/src/index.css
+client/src/main.tsx
+client/src/components/
+client/src/components/AppSidebar.tsx
+client/src/components/PrinterCard.tsx
+client/src/components/PrinterDetailsDialog.tsx
+client/src/components/PrinterTable.tsx
+client/src/components/QRScanner.tsx
+client/src/components/StatCard.tsx
+client/src/components/TaskBoardColumn.tsx
+client/src/components/ThemeProvider.tsx
+client/src/components/ThemeToggle.tsx
+client/src/components/WorkLogForm.tsx
+client/src/components/examples/
+client/src/components/examples/AppSidebar.tsx
+client/src/components/examples/PrinterCard.tsx
+client/src/components/examples/PrinterTable.tsx
+client/src/components/examples/QRScanner.tsx
+client/src/components/examples/StatCard.tsx
+client/src/components/examples/TaskBoardColumn.tsx
+client/src/components/examples/ThemeToggle.tsx
+client/src/components/examples/WorkLogForm.tsx
+client/src/components/ui/
+client/src/components/ui/accordion.tsx
+client/src/components/ui/alert-dialog.tsx
+client/src/components/ui/alert.tsx
+client/src/components/ui/aspect-ratio.tsx
+client/src/components/ui/avatar.tsx
+client/src/components/ui/badge.tsx
+client/src/components/ui/breadcrumb.tsx
+client/src/components/ui/button.tsx
+client/src/components/ui/calendar.tsx
+client/src/components/ui/card.tsx
+client/src/components/ui/carousel.tsx
+client/src/components/ui/chart.tsx
+client/src/components/ui/checkbox.tsx
+client/src/components/ui/collapsible.tsx
+client/src/components/ui/command.tsx
+client/src/components/ui/context-menu.tsx
+client/src/components/ui/dialog.tsx
+client/src/components/ui/drawer.tsx
+client/src/components/ui/dropdown-menu.tsx
+client/src/components/ui/form.tsx
+client/src/components/ui/hover-card.tsx
+client/src/components/ui/input-otp.tsx
+client/src/components/ui/input.tsx
+client/src/components/ui/label.tsx
+client/src/components/ui/menubar.tsx
+client/src/components/ui/navigation-menu.tsx
+client/src/components/ui/pagination.tsx
+client/src/components/ui/popover.tsx
+client/src/components/ui/progress.tsx
+client/src/components/ui/radio-group.tsx
+client/src/components/ui/resizable.tsx
+client/src/components/ui/scroll-area.tsx
+client/src/components/ui/select.tsx
+client/src/components/ui/separator.tsx
+client/src/components/ui/sheet.tsx
+client/src/components/ui/sidebar.tsx
+client/src/components/ui/skeleton.tsx
+client/src/components/ui/slider.tsx
+client/src/components/ui/switch.tsx
+client/src/components/ui/table.tsx
+client/src/components/ui/tabs.tsx
+client/src/components/ui/textarea.tsx
+client/src/components/ui/toast.tsx
+client/src/components/ui/toaster.tsx
+client/src/components/ui/toggle-group.tsx
+client/src/components/ui/toggle.tsx
+client/src/components/ui/tooltip.tsx
+client/src/hooks/
+client/src/hooks/use-mobile.tsx
+client/src/hooks/use-toast.ts
+client/src/lib/
+client/src/lib/queryClient.ts
+client/src/lib/utils.ts
+client/src/pages/
+client/src/pages/Categories.tsx
+client/src/pages/Dashboard.tsx
+client/src/pages/Groups.tsx
+client/src/pages/Login.tsx
+client/src/pages/Printers.tsx
+client/src/pages/SMTPSettings.tsx
+client/src/pages/Scan.tsx
+client/src/pages/Settings.tsx
+client/src/pages/TaskBoard.tsx
+client/src/pages/Tasks.tsx
+client/src/pages/TelegramSettings.tsx
+client/src/pages/Users.tsx
+client/src/pages/WorkLogs.tsx
+client/src/pages/not-found.tsx
+client/src/pages/examples/
+client/src/pages/examples/Dashboard.tsx
+client/src/pages/examples/Login.tsx
+client/src/pages/examples/Printers.tsx
+client/src/pages/examples/TaskBoard.tsx
+prisma/
+prisma/schema.prisma
+prisma/seed.ts
+server/
+server/app.ts
+server/db.ts
+server/index.ts
+server/prisma.ts
+server/routes.ts
+server/storage.ts
+server/vite.ts
+server/middleware/
+server/middleware/auth.ts
+server/routes/
+server/routes/auth.ts
+server/routes/board.ts
+server/routes/dashboard.ts
+server/routes/groups.ts
+server/routes/printers.ts
+server/routes/schedules.ts
+server/routes/smtp.ts
+server/routes/tasks.ts
+server/routes/telegram.ts
+server/routes/test-notifications.ts
+server/routes/users.ts
+server/routes/worklogs.ts
+server/services/
+server/services/emailService.ts
+server/services/schedulerService.ts
+server/services/telegramService.ts
+shared/
+shared/schema.ts
+
+sent 1,731,373 bytes  received 2,973 bytes  3,468,692.00 bytes/sec
+total size is 1,720,429  speedup is 0.99
+pi@raspberrypi:/tmp$ 
