@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import TaskBoardColumn from "@/components/TaskBoardColumn";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,6 +19,7 @@ type BoardData = {
 };
 
 export default function TaskBoard() {
+  const { t } = useTranslation();
   const { data: boardData, isLoading } = useQuery<BoardData>({
     queryKey: ["/api/board"],
   });
@@ -37,32 +39,32 @@ export default function TaskBoard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Дошка завдань</h1>
+      <h1 className="text-3xl font-bold">{t('dashboard.taskBoard')}</h1>
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         <TaskBoardColumn
-          title="Прострочені"
+          title={t('status.overdue')}
           count={boardData?.overdue.length || 0}
           tasks={boardData?.overdue || []}
           variant="overdue"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="Сьогодні"
+          title={t('status.today')}
           count={boardData?.today.length || 0}
           tasks={boardData?.today || []}
           variant="today"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="Цього тижня"
+          title={t('status.week')}
           count={boardData?.week.length || 0}
           tasks={boardData?.week || []}
           variant="week"
           onTaskClick={(id) => console.log("Task clicked:", id)}
         />
         <TaskBoardColumn
-          title="Майбутні"
+          title={t('status.upcoming')}
           count={boardData?.upcoming.length || 0}
           tasks={boardData?.upcoming || []}
           variant="upcoming"

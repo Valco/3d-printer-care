@@ -229,6 +229,7 @@
   "status": {
     "overdue": "Overdue",
     "today": "Today",
+    "week": "This Week",
     "upcoming": "Upcoming",
     "active": "Active",
     "inactive": "Inactive",
