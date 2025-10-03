@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ type LoginProps = {
 };
 
 export default function Login({ onLogin }: LoginProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
@@ -35,7 +37,7 @@ export default function Login({ onLogin }: LoginProps) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка входу",
+        title: t('login.loginError'),
         description: error.message,
         variant: "destructive",
       });
@@ -56,13 +58,13 @@ export default function Login({ onLogin }: LoginProps) {
               <Settings className="h-7 w-7 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Догляд за 3D принтерами</CardTitle>
-          <CardDescription>Увійдіть для керування обслуговуванням 3D принтерів</CardDescription>
+          <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -74,7 +76,7 @@ export default function Login({ onLogin }: LoginProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t('login.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -87,7 +89,7 @@ export default function Login({ onLogin }: LoginProps) {
             </div>
             <Button type="submit" className="w-full" disabled={loginMutation.isPending} data-testid="button-login">
               {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Увійти
+              {t('login.loginButton')}
             </Button>
           </form>
         </CardContent>
