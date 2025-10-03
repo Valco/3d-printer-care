@@ -43,6 +43,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 type Task = {
   id: string;
@@ -76,26 +77,27 @@ type Category = {
   name: string;
 };
 
-const taskSchema = z.object({
-  title: z.string().min(1, "Назва обов'язкова"),
-  categoryId: z.string().optional(),
-  intervalType: z.enum(["DAYS", "PRINT_HOURS", "JOB_COUNT"]),
-  intervalValue: z.coerce.number().min(1, "Значення має бути більше 0"),
-  defaultInstructions: z.string().optional(),
-  priority: z.coerce.number().min(1).max(10).default(5),
-  requiresAxis: z.boolean().default(false),
-  requiresNozzleSize: z.boolean().default(false),
-  requiresPlasticType: z.boolean().default(false),
-  customFieldLabel: z.string().optional(),
-  customFieldType: z.enum(["TEXT", "NUMBER", "none"]).optional(),
-});
-
-type TaskFormData = z.infer<typeof taskSchema>;
-
 export default function Tasks() {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { toast } = useToast();
+
+  const taskSchema = z.object({
+    title: z.string().min(1, t('task.titleRequired')),
+    categoryId: z.string().optional(),
+    intervalType: z.enum(["DAYS", "PRINT_HOURS", "JOB_COUNT"]),
+    intervalValue: z.coerce.number().min(1, t('task.valueMinError')),
+    defaultInstructions: z.string().optional(),
+    priority: z.coerce.number().min(1).max(10).default(5),
+    requiresAxis: z.boolean().default(false),
+    requiresNozzleSize: z.boolean().default(false),
+    requiresPlasticType: z.boolean().default(false),
+    customFieldLabel: z.string().optional(),
+    customFieldType: z.enum(["TEXT", "NUMBER", "none"]).optional(),
+  });
+
+  type TaskFormData = z.infer<typeof taskSchema>;
 
   const { data: tasks, isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -132,14 +134,14 @@ export default function Tasks() {
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Завдання успішно створено",
+        title: t('common.success'),
+        description: t('task.createSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося створити завдання",
+        title: t('common.error'),
+        description: t('task.createError'),
         variant: "destructive",
       });
     },
@@ -156,14 +158,14 @@ export default function Tasks() {
       setEditingTask(null);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Завдання успішно оновлено",
+        title: t('common.success'),
+        description: t('task.updateSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося оновити завдання",
+        title: t('common.error'),
+        description: t('task.updateError'),
         variant: "destructive",
       });
     },
@@ -177,14 +179,14 @@ export default function Tasks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       toast({
-        title: "Успіх",
-        description: "Завдання успішно видалено",
+        title: t('common.success'),
+        description: t('task.deleteSuccess'),
       });
     },
     onError: () => {
       toast({
-        title: "Помилка",
-        description: "Не вдалося видалити завдання",
+        title: t('common.error'),
+        description: t('task.deleteError'),
         variant: "destructive",
       });
     },
@@ -227,7 +229,7 @@ export default function Tasks() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Ви впевнені, що хочете видалити це завдання?")) {
+    if (confirm(t('task.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -243,11 +245,11 @@ export default function Tasks() {
   const getIntervalTypeLabel = (type: string) => {
     switch (type) {
       case "DAYS":
-        return "Днів";
+        return t('task.daysLabel');
       case "PRINT_HOURS":
-        return "Годин друку";
+        return t('task.printHoursLabel');
       case "JOB_COUNT":
-        return "Робіт";
+        return t('task.jobsLabel');
       default:
         return type;
     }
@@ -268,10 +270,10 @@ export default function Tasks() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Завдання обслуговування</h1>
+        <h1 className="text-3xl font-bold">{t('nav.tasks')}</h1>
         <Button onClick={handleCreate} data-testid="button-add-task">
           <Plus className="h-4 w-4 mr-2" />
-          Додати завдання
+          {t('task.addTask')}
         </Button>
       </div>
 
@@ -279,19 +281,19 @@ export default function Tasks() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Назва</TableHead>
-              <TableHead>Категорія</TableHead>
-              <TableHead>Інтервал</TableHead>
-              <TableHead>Пріоритет</TableHead>
-              <TableHead>Призначено</TableHead>
-              <TableHead className="text-right">Дії</TableHead>
+              <TableHead>{t('task.title')}</TableHead>
+              <TableHead>{t('task.category')}</TableHead>
+              <TableHead>{t('task.intervalType')}</TableHead>
+              <TableHead>{t('task.priority')}</TableHead>
+              <TableHead>{t('printer.assignedTasks')}</TableHead>
+              <TableHead className="text-right">{t('common.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tasks?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  Завдання не знайдено
+                  {t('common.noData')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -306,7 +308,7 @@ export default function Tasks() {
                     )}
                   </TableCell>
                   <TableCell>
-                    Кожні {task.intervalValue} {getIntervalTypeLabel(task.intervalType)}
+                    {t('task.intervalValue')}: {task.intervalValue} {getIntervalTypeLabel(task.intervalType)}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -318,10 +320,10 @@ export default function Tasks() {
                   <TableCell>
                     {task.schedules.length > 0 ? (
                       <span className="text-sm text-muted-foreground">
-                        {task.schedules.length} принтер(ів)
+                        {task.schedules.length} {t('nav.printers').toLowerCase()}
                       </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground">Не призначено</span>
+                      <span className="text-sm text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -355,12 +357,10 @@ export default function Tasks() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingTask ? "Редагувати завдання" : "Додати завдання"}
+              {editingTask ? t('task.editTask') : t('task.addTask')}
             </DialogTitle>
             <DialogDescription>
-              {editingTask
-                ? "Оновіть інформацію про завдання обслуговування"
-                : "Створіть нове завдання обслуговування"}
+              {editingTask ? t('task.updateInfo') : t('task.createInfo')}
             </DialogDescription>
           </DialogHeader>
 
@@ -371,7 +371,7 @@ export default function Tasks() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Назва *</FormLabel>
+                    <FormLabel>{t('task.title')} *</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-title" />
                     </FormControl>
@@ -385,7 +385,7 @@ export default function Tasks() {
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Категорія</FormLabel>
+                    <FormLabel>{t('task.category')}</FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(value === "none" ? "" : value)}
                       defaultValue={field.value || "none"}
@@ -393,11 +393,11 @@ export default function Tasks() {
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Виберіть категорію" />
+                          <SelectValue placeholder={t('task.selectCategory')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Без категорії</SelectItem>
+                        <SelectItem value="none">-</SelectItem>
                         {categories?.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.name}
@@ -416,7 +416,7 @@ export default function Tasks() {
                   name="intervalType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Тип інтервалу *</FormLabel>
+                      <FormLabel>{t('task.intervalType')} *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-interval-type">
@@ -424,9 +424,9 @@ export default function Tasks() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="DAYS">Днів</SelectItem>
-                          <SelectItem value="PRINT_HOURS">Годин друку</SelectItem>
-                          <SelectItem value="JOB_COUNT">Кількість робіт</SelectItem>
+                          <SelectItem value="DAYS">{t('task.days')}</SelectItem>
+                          <SelectItem value="PRINT_HOURS">{t('task.printHours')}</SelectItem>
+                          <SelectItem value="JOB_COUNT">{t('task.jobCount')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -439,7 +439,7 @@ export default function Tasks() {
                   name="intervalValue"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Значення *</FormLabel>
+                      <FormLabel>{t('task.intervalValue')} *</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} data-testid="input-interval-value" />
                       </FormControl>
@@ -454,7 +454,7 @@ export default function Tasks() {
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Пріоритет (1-10) *</FormLabel>
+                    <FormLabel>{t('task.priority')} (1-10) *</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={10} {...field} data-testid="input-priority" />
                     </FormControl>
@@ -468,7 +468,7 @@ export default function Tasks() {
                 name="defaultInstructions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Інструкції за замовчуванням</FormLabel>
+                    <FormLabel>{t('task.instructions')}</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={4} data-testid="input-instructions" />
                     </FormControl>
@@ -478,7 +478,7 @@ export default function Tasks() {
               />
 
               <div className="space-y-3 border-t pt-4">
-                <h4 className="text-sm font-medium">Додаткові поля для запису роботи</h4>
+                <h4 className="text-sm font-medium">{t('task.dynamicFields')}</h4>
                 
                 <div className="space-y-2">
                   <FormField
@@ -494,7 +494,7 @@ export default function Tasks() {
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          Потребує вказати вісь (X, Y, Z)
+                          {t('task.requiresAxis')}
                         </FormLabel>
                       </FormItem>
                     )}
@@ -513,7 +513,7 @@ export default function Tasks() {
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          Потребує вказати розмір сопла
+                          {t('task.requiresNozzleSize')}
                         </FormLabel>
                       </FormItem>
                     )}
@@ -532,7 +532,7 @@ export default function Tasks() {
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          Потребує вказати вид пластику
+                          {t('task.requiresPlasticType')}
                         </FormLabel>
                       </FormItem>
                     )}
@@ -545,11 +545,11 @@ export default function Tasks() {
                     name="customFieldLabel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Назва кастомного поля</FormLabel>
+                        <FormLabel>{t('task.customFieldLabel')}</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
-                            placeholder="напр. Температура" 
+                            placeholder={t('task.customField')} 
                             data-testid="input-custom-label"
                           />
                         </FormControl>
@@ -563,7 +563,7 @@ export default function Tasks() {
                     name="customFieldType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Тип поля</FormLabel>
+                        <FormLabel>{t('task.customFieldType')}</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
                           value={field.value || "none"}
@@ -574,9 +574,9 @@ export default function Tasks() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="none">Немає</SelectItem>
-                            <SelectItem value="TEXT">Текст</SelectItem>
-                            <SelectItem value="NUMBER">Число</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
+                            <SelectItem value="TEXT">{t('task.text')}</SelectItem>
+                            <SelectItem value="NUMBER">{t('task.number')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -593,14 +593,14 @@ export default function Tasks() {
                   onClick={() => setIsDialogOpen(false)}
                   data-testid="button-cancel"
                 >
-                  Скасувати
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   data-testid="button-submit"
                 >
-                  {editingTask ? "Оновити" : "Створити"}
+                  {editingTask ? t('task.update') : t('task.create')}
                 </Button>
               </DialogFooter>
             </form>
