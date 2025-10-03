@@ -26,7 +26,7 @@ export function createApp(): Express {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: false, // Set to true only if using HTTPS
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
