@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import {
@@ -61,21 +62,24 @@ type UserGroup = {
   name: string;
 };
 
-const userSchema = z.object({
-  name: z.string().min(1, "Ім'я обов'язкове"),
-  email: z.string().email("Некоректний email"),
+const getUserSchema = (t: any) => z.object({
+  name: z.string().min(1, t('user.nameRequired')),
+  email: z.string().email(t('user.emailInvalid')),
   telegramNickname: z.string().optional(),
-  password: z.string().min(6, "Пароль повинен містити мінімум 6 символів").optional().or(z.literal("")),
+  password: z.string().min(6, t('user.passwordMinLength')).optional().or(z.literal("")),
   role: z.enum(["ADMIN", "OPERATOR", "VIEWER"]),
   groupId: z.string().optional(),
 });
 
-type UserFormData = z.infer<typeof userSchema>;
+type UserFormData = z.infer<ReturnType<typeof getUserSchema>>;
 
 export default function Users() {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const { toast } = useToast();
+  
+  const userSchema = getUserSchema(t);
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
@@ -111,14 +115,14 @@ export default function Users() {
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Користувача успішно створено",
+        title: t('common.success'),
+        description: t('user.createSuccess'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Помилка",
-        description: error.message || "Не вдалося створити користувача",
+        title: t('common.error'),
+        description: error.message || t('user.createError'),
         variant: "destructive",
       });
     },
@@ -139,14 +143,14 @@ export default function Users() {
       setEditingUser(null);
       form.reset();
       toast({
-        title: "Успіх",
-        description: "Користувача успішно оновлено",
+        title: t('common.success'),
+        description: t('user.updateSuccess'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Помилка",
-        description: error.message || "Не вдалося оновити користувача",
+        title: t('common.error'),
+        description: error.message || t('user.updateError'),
         variant: "destructive",
       });
     },
@@ -160,14 +164,14 @@ export default function Users() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       toast({
-        title: "Успіх",
-        description: "Користувача успішно видалено",
+        title: t('common.success'),
+        description: t('user.deleteSuccess'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Помилка",
-        description: error.message || "Не вдалося видалити користувача",
+        title: t('common.error'),
+        description: error.message || t('user.deleteError'),
         variant: "destructive",
       });
     },
@@ -187,7 +191,7 @@ export default function Users() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Ви впевнені, що хочете видалити цього користувача?")) {
+    if (confirm(t('user.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -214,11 +218,11 @@ export default function Users() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "Адміністратор";
+        return t('user.admin');
       case "OPERATOR":
-        return "Оператор";
+        return t('user.operator');
       default:
-        return "Глядач";
+        return t('user.viewer');
     }
   };
 
@@ -234,7 +238,7 @@ export default function Users() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Користувачі</h1>
+        <h1 className="text-3xl font-bold">{t('user.users')}</h1>
         <Button
           onClick={() => {
             setEditingUser(null);
@@ -251,7 +255,7 @@ export default function Users() {
           data-testid="button-add-user"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Додати користувача
+          {t('user.addUser')}
         </Button>
       </div>
 
@@ -259,18 +263,18 @@ export default function Users() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ім'я</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Роль</TableHead>
-              <TableHead>Група</TableHead>
-              <TableHead className="text-right">Дії</TableHead>
+              <TableHead>{t('user.name')}</TableHead>
+              <TableHead>{t('user.email')}</TableHead>
+              <TableHead>{t('user.role')}</TableHead>
+              <TableHead>{t('user.group')}</TableHead>
+              <TableHead className="text-right">{t('user.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {!users || users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Користувачів не знайдено
+                  {t('user.noUsers')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -317,12 +321,12 @@ export default function Users() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingUser ? "Редагувати користувача" : "Додати користувача"}
+              {editingUser ? t('user.editUser') : t('user.addUser')}
             </DialogTitle>
             <DialogDescription>
               {editingUser 
-                ? "Оновіть інформацію про користувача" 
-                : "Створіть нового користувача"}
+                ? t('user.updateInfo')
+                : t('user.createInfo')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -332,7 +336,7 @@ export default function Users() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ім'я</FormLabel>
+                    <FormLabel>{t('user.name')}</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-name" />
                     </FormControl>
@@ -345,7 +349,7 @@ export default function Users() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('user.email')}</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" data-testid="input-email" />
                     </FormControl>
@@ -358,7 +362,7 @@ export default function Users() {
                 name="telegramNickname"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Нік в Telegram (необов'язково)</FormLabel>
+                    <FormLabel>{t('user.telegramOptional')}</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="@username" data-testid="input-telegram-nickname" />
                     </FormControl>
@@ -372,7 +376,7 @@ export default function Users() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {editingUser ? "Пароль (залиште порожнім для незмінності)" : "Пароль"}
+                      {editingUser ? t('user.passwordOptional') : t('user.password')}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -390,7 +394,7 @@ export default function Users() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Роль</FormLabel>
+                    <FormLabel>{t('user.role')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -398,13 +402,13 @@ export default function Users() {
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-role">
-                          <SelectValue placeholder="Оберіть роль" />
+                          <SelectValue placeholder={t('user.selectRole')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="VIEWER">Глядач</SelectItem>
-                        <SelectItem value="OPERATOR">Оператор</SelectItem>
-                        <SelectItem value="ADMIN">Адміністратор</SelectItem>
+                        <SelectItem value="VIEWER">{t('user.viewer')}</SelectItem>
+                        <SelectItem value="OPERATOR">{t('user.operator')}</SelectItem>
+                        <SelectItem value="ADMIN">{t('user.admin')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -416,7 +420,7 @@ export default function Users() {
                 name="groupId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Група (необов'язково)</FormLabel>
+                    <FormLabel>{t('user.groupOptional')}</FormLabel>
                     <Select
                       onValueChange={(value) => {
                         const newValue = value === "none" ? "" : value;
@@ -428,11 +432,11 @@ export default function Users() {
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-group">
-                          <SelectValue placeholder="Оберіть групу" />
+                          <SelectValue placeholder={t('user.selectGroup')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Без групи</SelectItem>
+                        <SelectItem value="none">{t('user.noGroup')}</SelectItem>
                         {groups?.map((group) => (
                           <SelectItem key={group.id} value={group.id}>
                             {group.name}
@@ -455,14 +459,14 @@ export default function Users() {
                   }}
                   data-testid="button-cancel"
                 >
-                  Скасувати
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   data-testid="button-submit"
                 >
-                  {editingUser ? "Зберегти" : "Створити"}
+                  {editingUser ? t('user.save') : t('common.create')}
                 </Button>
               </DialogFooter>
             </form>
