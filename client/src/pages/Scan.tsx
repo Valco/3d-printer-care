@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ type QRData = {
 };
 
 export default function Scan() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -36,7 +38,7 @@ export default function Scan() {
 
       const videoInputDevices = await BrowserQRCodeReader.listVideoInputDevices();
       if (videoInputDevices.length === 0) {
-        setError("Камера не знайдена");
+        setError(t('qrScanner.cameraNotFound'));
         return;
       }
 
@@ -79,13 +81,13 @@ export default function Scan() {
       } catch (cameraErr: any) {
         console.error("Camera access error:", cameraErr);
         
-        let errorMessage = "Не вдалося отримати доступ до камери";
+        let errorMessage = t('qrScanner.cameraAccessFailed');
         if (cameraErr.name === "NotAllowedError" || cameraErr.name === "PermissionDeniedError") {
-          errorMessage = "Доступ до камери заборонено. Будь ласка, дозвольте доступ у налаштуваннях браузера.";
+          errorMessage = t('qrScanner.cameraAccessDenied');
         } else if (cameraErr.name === "NotReadableError" || cameraErr.name === "TrackStartError") {
-          errorMessage = "Камера зайнята іншим додатком. Закрийте інші програми, що використовують камеру.";
+          errorMessage = t('qrScanner.cameraBusy');
         } else if (cameraErr.name === "NotFoundError") {
-          errorMessage = "Камера не знайдена на цьому пристрої";
+          errorMessage = t('qrScanner.cameraNotFoundDevice');
         }
         
         setError(errorMessage);
@@ -97,7 +99,7 @@ export default function Scan() {
       }
     } catch (err) {
       console.error("Camera initialization error:", err);
-      setError("Не вдалося ініціалізувати камеру");
+      setError(t('qrScanner.cameraInitFailed'));
       setIsScanning(false);
     }
   };
@@ -113,9 +115,9 @@ export default function Scan() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold" data-testid="heading-qr-scanner">QR сканер</h1>
+        <h1 className="text-3xl font-bold" data-testid="heading-qr-scanner">{t('nav.qrScanner')}</h1>
         <p className="text-muted-foreground mt-1">
-          Скануйте QR код принтера для додавання роботи
+          {t('qrScanner.scanPrinterQR')}
         </p>
       </div>
 
@@ -130,11 +132,11 @@ export default function Scan() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Камера</CardTitle>
+          <CardTitle>{t('qrScanner.camera')}</CardTitle>
           <CardDescription>
             {isScanning
-              ? "Наведіть камеру на QR код принтера"
-              : "Натисніть кнопку для активації камери"}
+              ? t('qrScanner.pointCamera')
+              : t('qrScanner.clickToActivate')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -148,7 +150,7 @@ export default function Scan() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <Camera className="h-16 w-16 mx-auto mb-2" />
-                  <p>Камера вимкнена</p>
+                  <p>{t('qrScanner.cameraOff')}</p>
                 </div>
               </div>
             )}
@@ -158,13 +160,13 @@ export default function Scan() {
             {!isScanning && (
               <Button onClick={startScanning} data-testid="button-start-scan">
                 <Camera className="h-4 w-4 mr-2" />
-                Почати сканування
+                {t('qrScanner.startScanning')}
               </Button>
             )}
             {isScanning && (
               <Button onClick={stopScanning} variant="destructive" data-testid="button-stop-scan">
                 <CameraOff className="h-4 w-4 mr-2" />
-                Зупинити
+                {t('qrScanner.stop')}
               </Button>
             )}
           </div>

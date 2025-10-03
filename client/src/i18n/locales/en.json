@@ -300,7 +300,19 @@
     "instructions": "Point the camera at the printer's QR code",
     "permissionDenied": "Camera access denied",
     "cameraNotFound": "Camera not found",
-    "error": "Scanning error"
+    "error": "Scanning error",
+    "scanPrinterQR": "Scan printer QR code to add work log",
+    "camera": "Camera",
+    "pointCamera": "Point the camera at the printer's QR code",
+    "clickToActivate": "Click button to activate camera",
+    "cameraOff": "Camera is off",
+    "startScanning": "Start Scanning",
+    "stop": "Stop",
+    "cameraAccessDenied": "Camera access denied. Please allow access in browser settings.",
+    "cameraBusy": "Camera is busy with another application. Close other programs using the camera.",
+    "cameraNotFoundDevice": "No camera found on this device",
+    "cameraAccessFailed": "Failed to access camera",
+    "cameraInitFailed": "Failed to initialize camera"
   },
   "status": {
     "overdue": "Overdue",
