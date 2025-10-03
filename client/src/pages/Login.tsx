@@ -90,9 +90,6 @@ export default function Login({ onLogin }: LoginProps) {
               Увійти
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            Демо: admin@example.com / admin123
-          </div>
         </CardContent>
       </Card>
     </div>
