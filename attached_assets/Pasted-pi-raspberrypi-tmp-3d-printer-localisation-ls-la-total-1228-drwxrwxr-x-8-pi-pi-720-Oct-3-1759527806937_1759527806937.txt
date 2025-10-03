@@ -1,0 +1,39 @@
+pi@raspberrypi:/tmp/3d-printer-localisation$ ls -la
+total 1228
+drwxrwxr-x  8 pi   pi      720 Oct  3 21:42 .
+drwxrwxrwt 10 root root    200 Oct  3 21:42 ..
+drwxrwxr-x  7 pi   pi      240 Oct  3 21:42 .git
+-rw-rw-r--  1 pi   pi       67 Oct  3 21:42 .gitignore
+-rw-rw-r--  1 pi   pi      849 Oct  3 21:42 .replit
+-rw-rw-r--  1 pi   pi    15704 Oct  3 21:42 INSTALL.md
+-rw-rw-r--  1 pi   pi    21879 Oct  3 21:42 README.md
+-rw-rw-r--  1 pi   pi    11831 Oct  3 21:42 a1-001-card.png
+-rw-rw-r--  1 pi   pi    28742 Oct  3 21:42 after_load.png
+drwxrwxr-x  2 pi   pi      140 Oct  3 21:42 attached_assets
+drwxrwxr-x  3 pi   pi       80 Oct  3 21:42 client
+-rw-rw-r--  1 pi   pi    70067 Oct  3 21:42 collapsed-sidebar.png
+-rw-rw-r--  1 pi   pi      459 Oct  3 21:42 components.json
+-rw-rw-r--  1 pi   pi    78534 Oct  3 21:42 dashboard-final.png
+-rw-rw-r--  1 pi   pi    77594 Oct  3 21:42 dashboard-printers.png
+-rw-rw-r--  1 pi   pi    33983 Oct  3 21:42 database_backup.sql
+-rw-rw-r--  1 pi   pi     7358 Oct  3 21:42 design_guidelines.md
+-rw-rw-r--  1 pi   pi      325 Oct  3 21:42 drizzle.config.ts
+-rw-rw-r--  1 pi   pi    70067 Oct  3 21:42 expanded-sidebar-attempt.png
+-rw-rw-r--  1 pi   pi    76742 Oct  3 21:42 expanded-sidebar-final.png
+-rw-rw-r--  1 pi   pi   382402 Oct  3 21:42 package-lock.json
+-rw-rw-r--  1 pi   pi     4044 Oct  3 21:42 package.json
+-rw-rw-r--  1 pi   pi       80 Oct  3 21:42 postcss.config.js
+-rw-rw-r--  1 pi   pi    12743 Oct  3 21:42 printer-A1-001-card.png
+-rw-rw-r--  1 pi   pi    12146 Oct  3 21:42 printer_A1-001.png
+drwxrwxr-x  2 pi   pi       80 Oct  3 21:42 prisma
+-rw-rw-r--  1 pi   pi    10133 Oct  3 21:42 replit.md
+drwxrwxr-x  5 pi   pi      240 Oct  3 21:42 server
+-rw-rw-r--  1 pi   pi     2131 Oct  3 21:42 settings-button.png
+-rw-rw-r--  1 pi   pi    75611 Oct  3 21:42 settings-expanded.png
+drwxrwxr-x  2 pi   pi       60 Oct  3 21:42 shared
+-rw-rw-r--  1 pi   pi    78807 Oct  3 21:42 sidebar.png
+-rw-rw-r--  1 pi   pi     4256 Oct  3 21:42 tailwind.config.ts
+-rw-rw-r--  1 pi   pi   109393 Oct  3 21:42 task-board.png
+-rw-rw-r--  1 pi   pi      657 Oct  3 21:42 tsconfig.json
+-rw-rw-r--  1 pi   pi     1080 Oct  3 21:42 vite.config.ts
+pi@raspberrypi:/tmp/3d-printer-localisation$ 
