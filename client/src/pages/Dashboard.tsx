@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Plus, QrCode, Printer, Loader2 } from "lucide-react";
 import StatCard from "@/components/StatCard";
@@ -74,6 +75,7 @@ type WorkLogInput = {
 };
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [location, navigate] = useLocation();
   const [showWorkLog, setShowWorkLog] = useState(false);
   const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(null);
@@ -116,15 +118,15 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/board"] });
       toast({
-        title: "Успіх",
-        description: "Роботу успішно записано",
+        title: t('common.success'),
+        description: t('messages.saveSuccess'),
       });
       setShowWorkLog(false);
       setPreselectedPrinterId(null);
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -165,29 +167,29 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Панель управління</h1>
+        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
         <div className="flex gap-2">
           <Button onClick={() => setShowWorkLog(true)} data-testid="button-record-work">
             <Plus className="h-4 w-4 mr-2" />
-            Записати роботу
+            {t('dashboard.addWorkLog')}
           </Button>
           <Button variant="outline" onClick={() => navigate('/scan')} data-testid="button-scan-qr">
             <QrCode className="h-4 w-4 mr-2" />
-            Сканувати QR
+            {t('dashboard.scanQR')}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          title="Всього принтерів" 
+          title={t('dashboard.totalPrinters')} 
           value={dashboardData?.totalPrinters || 0} 
           icon={Printer} 
           variant="default" 
           testId="stat-total-printers" 
         />
         <StatCard 
-          title="Прострочені" 
+          title={t('dashboard.overdueTasks')} 
           value={dashboardData?.overdueCount || 0} 
           icon={AlertCircle} 
           variant="overdue" 
@@ -195,7 +197,7 @@ export default function Dashboard() {
           tasks={allOverdueTasks}
         />
         <StatCard 
-          title="Сьогодні" 
+          title={t('dashboard.todayTasks')} 
           value={dashboardData?.todayCount || 0} 
           icon={Clock} 
           variant="warning" 
@@ -203,7 +205,7 @@ export default function Dashboard() {
           tasks={allTodayTasks}
         />
         <StatCard 
-          title="Майбутні" 
+          title={t('dashboard.upcomingTasks')} 
           value={dashboardData?.upcomingCount || 0} 
           icon={TrendingUp} 
           variant="success" 
@@ -213,7 +215,7 @@ export default function Dashboard() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Принтери</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('nav.printers')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dashboardData?.printers.map((printer) => (
             <PrinterCard
@@ -238,7 +240,7 @@ export default function Dashboard() {
       <Dialog open={showWorkLog} onOpenChange={setShowWorkLog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Записати виконану роботу</DialogTitle>
+            <DialogTitle>{t('dashboard.addWorkLog')}</DialogTitle>
           </DialogHeader>
           {printersLoading || tasksLoading ? (
             <div className="space-y-4 py-4">

@@ -29,6 +29,8 @@
     "dashboard": "Панель управління",
     "printers": "Принтери",
     "tasks": "Завдання",
+    "taskBoard": "Дошка завдань",
+    "qrScanner": "QR сканер",
     "users": "Користувачі",
     "groups": "Групи",
     "categories": "Категорії",
@@ -36,7 +38,12 @@
     "settings": "Налаштування",
     "logout": "Вийти",
     "smtp": "SMTP Налаштування",
-    "telegram": "Telegram Налаштування"
+    "telegram": "Telegram Налаштування",
+    "mainMenu": "Головне меню",
+    "management": "Керування",
+    "general": "Загальні",
+    "theme": "Тема",
+    "appTitle": "Догляд за 3D принтерами"
   },
   "login": {
     "title": "Догляд за 3D принтерами",

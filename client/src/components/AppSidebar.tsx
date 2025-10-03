@@ -15,6 +15,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -24,24 +25,25 @@ type AppSidebarProps = {
 };
 
 export function AppSidebar({ userRole }: AppSidebarProps) {
+  const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mainItems = [
-    { title: "Панель управління", url: "/", icon: LayoutDashboard },
-    { title: "Принтери", url: "/printers", icon: Printer },
-    { title: "Завдання", url: "/tasks", icon: ClipboardList },
-    { title: "Дошка завдань", url: "/board", icon: KanbanSquare },
-    { title: "Журнал робіт", url: "/logs", icon: FileText },
-    { title: "QR сканер", url: "/scan", icon: QrCode },
+    { title: t('nav.dashboard'), url: "/", icon: LayoutDashboard },
+    { title: t('nav.printers'), url: "/printers", icon: Printer },
+    { title: t('nav.tasks'), url: "/tasks", icon: ClipboardList },
+    { title: t('nav.taskBoard'), url: "/board", icon: KanbanSquare },
+    { title: t('nav.workLogs'), url: "/logs", icon: FileText },
+    { title: t('nav.qrScanner'), url: "/scan", icon: QrCode },
   ];
 
   const settingsSubItems = [
-    { title: "Категорії", url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
-    { title: "Користувачі", url: "/settings/users", icon: Users, roles: ["ADMIN"] },
-    { title: "Групи", url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
-    { title: "SMTP", url: "/settings/smtp", icon: Mail, roles: ["ADMIN"] },
-    { title: "Telegram", url: "/settings/telegram", icon: MessageSquare, roles: ["ADMIN"] },
+    { title: t('nav.categories'), url: "/settings/categories", icon: FolderTree, roles: ["ADMIN", "OPERATOR"] },
+    { title: t('nav.users'), url: "/settings/users", icon: Users, roles: ["ADMIN"] },
+    { title: t('nav.groups'), url: "/settings/groups", icon: Users, roles: ["ADMIN"] },
+    { title: t('nav.smtp'), url: "/settings/smtp", icon: Mail, roles: ["ADMIN"] },
+    { title: t('nav.telegram'), url: "/settings/telegram", icon: MessageSquare, roles: ["ADMIN"] },
   ];
 
   const hasSettingsAccess = settingsSubItems.some(item => item.roles.includes(userRole)) || userRole === "ADMIN";
@@ -54,7 +56,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             <Settings className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold truncate">Догляд за 3D принтерами</h2>
+            <h2 className="font-semibold truncate">{t('nav.appTitle')}</h2>
             <Badge variant="outline" className="text-xs mt-1">
               {userRole}
             </Badge>
@@ -63,7 +65,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Головне меню</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.mainMenu')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -86,7 +88,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
 
         {hasSettingsAccess && (
           <SidebarGroup>
-            <SidebarGroupLabel>Керування</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('nav.management')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
@@ -96,11 +98,11 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                   >
                     <button 
                       onClick={() => setSettingsOpen(!settingsOpen)}
-                      data-testid="nav-налаштування"
+                      data-testid="nav-settings"
                       className="w-full"
                     >
                       <Settings className="h-4 w-4" />
-                      <span>Налаштування</span>
+                      <span>{t('nav.settings')}</span>
                       <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
                     </button>
                   </SidebarMenuButton>
@@ -127,11 +129,11 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                           <SidebarMenuSubButton
                             asChild
                             isActive={location === '/settings'}
-                            data-testid="nav-загальні-налаштування"
+                            data-testid="nav-general-settings"
                           >
                             <a href="/settings" onClick={(e) => { e.preventDefault(); setLocation('/settings'); }}>
                               <Settings className="h-4 w-4" />
-                              <span>Загальні</span>
+                              <span>{t('nav.general')}</span>
                             </a>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -146,7 +148,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Тема</span>
+          <span className="text-sm text-muted-foreground">{t('nav.theme')}</span>
           <ThemeToggle />
         </div>
       </SidebarFooter>

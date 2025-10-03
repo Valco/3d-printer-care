@@ -29,6 +29,8 @@
     "dashboard": "Dashboard",
     "printers": "Printers",
     "tasks": "Tasks",
+    "taskBoard": "Task Board",
+    "qrScanner": "QR Scanner",
     "users": "Users",
     "groups": "Groups",
     "categories": "Categories",
@@ -36,7 +38,12 @@
     "settings": "Settings",
     "logout": "Logout",
     "smtp": "SMTP Settings",
-    "telegram": "Telegram Settings"
+    "telegram": "Telegram Settings",
+    "mainMenu": "Main Menu",
+    "management": "Management",
+    "general": "General",
+    "theme": "Theme",
+    "appTitle": "3D Printer Care"
   },
   "login": {
     "title": "3D Printer Care",
